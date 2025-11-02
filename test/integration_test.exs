@@ -78,6 +78,7 @@ defmodule BpyMcp.IntegrationTest do
     test "complete tool call cycle works" do
       # Test a complete tool call from invocation to response using the new command system
       tool_name = "bpy_execute_command"
+
       args = %{
         "commands" => [
           %{
@@ -86,6 +87,7 @@ defmodule BpyMcp.IntegrationTest do
           }
         ]
       }
+
       initial_state = %{test: true}
 
       result = NativeService.handle_tool_call(tool_name, args, initial_state)

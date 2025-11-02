@@ -81,11 +81,12 @@ defmodule BpyMcp do
     try do
       # Use Registry.select to get all entries
       # Pattern: {{key, pid, value}, guards, select}
-      contexts = Registry.select(BpyMcp.SceneRegistry, [{{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$2", :"$3"}}]}])
-      |> Enum.map(fn {scene_id, pid, _value} ->
-        operation_count = get_operation_count(pid)
-        %{scene_id: scene_id, pid: pid, operation_count: operation_count}
-      end)
+      contexts =
+        Registry.select(BpyMcp.SceneRegistry, [{{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$2", :"$3"}}]}])
+        |> Enum.map(fn {scene_id, pid, _value} ->
+          operation_count = get_operation_count(pid)
+          %{scene_id: scene_id, pid: pid, operation_count: operation_count}
+        end)
 
       {:ok, contexts}
     rescue

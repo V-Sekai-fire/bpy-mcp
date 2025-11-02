@@ -3,6 +3,7 @@
 
 defmodule BpyMcp.NativeService do
   import Briefly
+
   @moduledoc """
   Native BEAM service for Blender bpy MCP using ex_mcp library.
   Provides 3D modeling and rendering tools via MCP protocol.
@@ -17,11 +18,12 @@ defmodule BpyMcp.NativeService do
 
   # Whitelist of allowed commands
   @allowed_commands MapSet.new([
-    "create_cube",
-    "create_sphere",
-    "get_scene_info",
-    "reset_scene"
-  ])
+                      "create_cube",
+                      "create_sphere",
+                      "get_scene_info",
+                      "reset_scene",
+                      "export_bmesh"
+                    ])
 
   # Command registry - maps command names to handler functions and schemas
   @commands %{
@@ -36,7 +38,12 @@ defmodule BpyMcp.NativeService do
         type: "object",
         properties: %{
           name: %{type: "string", description: "Name for the cube object", default: "Cube"},
-          location: %{type: "array", items: %{type: "number"}, description: "Location as [x, y, z] coordinates", default: [0, 0, 0]},
+          location: %{
+            type: "array",
+            items: %{type: "number"},
+            description: "Location as [x, y, z] coordinates",
+            default: [0, 0, 0]
+          },
           size: %{type: "number", description: "Size of the cube", default: 2.0}
         }
       },
@@ -48,7 +55,12 @@ defmodule BpyMcp.NativeService do
         type: "object",
         properties: %{
           name: %{type: "string", description: "Name for the sphere object", default: "Sphere"},
-          location: %{type: "array", items: %{type: "number"}, description: "Location as [x, y, z] coordinates", default: [0, 0, 0]},
+          location: %{
+            type: "array",
+            items: %{type: "number"},
+            description: "Location as [x, y, z] coordinates",
+            default: [0, 0, 0]
+          },
           radius: %{type: "number", description: "Radius of the sphere", default: 1.0}
         }
       },
@@ -58,10 +70,13 @@ defmodule BpyMcp.NativeService do
       handler: :handle_get_scene_info,
       schema: %{type: "object", properties: %{}},
       description: "Get information about the current Blender scene"
+    },
+    "export_bmesh" => %{
+      handler: :handle_export_bmesh,
+      schema: %{type: "object", properties: %{}},
+      description: "Export the current Blender scene as BMesh data in EXT_mesh_bmesh format"
     }
   }
-
-
 
   # Command-based tools
 
@@ -107,9 +122,10 @@ defmodule BpyMcp.NativeService do
 
   @impl true
   def handle_tool_call("bpy_list_commands", _args, state) do
-    commands = Enum.map(@commands, fn {name, %{schema: schema, description: description}} ->
-      %{name: name, schema: schema, description: description}
-    end)
+    commands =
+      Enum.map(@commands, fn {name, %{schema: schema, description: description}} ->
+        %{name: name, schema: schema, description: description}
+      end)
 
     {:ok, %{content: [text("Available commands: #{inspect(commands)}")]}, state}
   end
@@ -141,32 +157,36 @@ defmodule BpyMcp.NativeService do
 
   # Execute commands individually but return only the last result
   defp execute_commands_individually(commands, state, temp_dir) do
-    results = Enum.map(commands, fn %{"command" => command_name} = command_spec ->
-      command_args = Map.get(command_spec, "args", %{})
+    results =
+      Enum.map(commands, fn %{"command" => command_name} = command_spec ->
+        command_args = Map.get(command_spec, "args", %{})
 
-      # Check whitelist first
-      if MapSet.member?(@allowed_commands, command_name) do
-        case Map.get(@commands, command_name) do
-          %{handler: handler} ->
-            # Pass temp_dir to handler functions
-            case apply(__MODULE__, handler, [command_args, state, temp_dir]) do
-              {:ok, response, _new_state} -> {:ok, command_name, response}
-              {:error, reason, _new_state} -> {:error, command_name, reason}
-            end
-          nil ->
-            {:error, command_name, "Command not implemented: #{command_name}"}
+        # Check whitelist first
+        if MapSet.member?(@allowed_commands, command_name) do
+          case Map.get(@commands, command_name) do
+            %{handler: handler} ->
+              # Pass temp_dir to handler functions
+              case apply(__MODULE__, handler, [command_args, state, temp_dir]) do
+                {:ok, response, _new_state} -> {:ok, command_name, response}
+                {:error, reason, _new_state} -> {:error, command_name, reason}
+              end
+
+            nil ->
+              {:error, command_name, "Command not implemented: #{command_name}"}
+          end
+        else
+          {:error, command_name, "Command not allowed: #{command_name}"}
         end
-      else
-        {:error, command_name, "Command not allowed: #{command_name}"}
-      end
-    end)
+      end)
 
     # Return only the last command's result
     case List.last(results) do
       {:ok, last_cmd, response} ->
         {:ok, response, state}
+
       {:error, last_cmd, reason} ->
         {:error, "Command '#{last_cmd}' failed: #{reason}", state}
+
       nil ->
         {:error, "No commands executed", state}
     end
@@ -178,6 +198,7 @@ defmodule BpyMcp.NativeService do
     case BpyMcp.BpyTools.reset_scene(temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
+
       {:error, reason} ->
         {:error, "Failed to reset scene: #{reason}", state}
     end
@@ -187,9 +208,11 @@ defmodule BpyMcp.NativeService do
     name = Map.get(args, "name", "Cube")
     location = Map.get(args, "location", [0, 0, 0])
     size = Map.get(args, "size", 2.0)
+
     case BpyMcp.BpyTools.create_cube(name, location, size, temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
+
       {:error, reason} ->
         {:error, "Failed to create cube: #{reason}", state}
     end
@@ -199,9 +222,11 @@ defmodule BpyMcp.NativeService do
     name = Map.get(args, "name", "Sphere")
     location = Map.get(args, "location", [0, 0, 0])
     radius = Map.get(args, "radius", 1.0)
+
     case BpyMcp.BpyTools.create_sphere(name, location, radius, temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
+
       {:error, reason} ->
         {:error, "Failed to create sphere: #{reason}", state}
     end
@@ -211,8 +236,18 @@ defmodule BpyMcp.NativeService do
     case BpyMcp.BpyTools.get_scene_info(temp_dir) do
       {:ok, info} ->
         {:ok, %{content: [text("Scene info: #{inspect(info)}")]}, state}
+
       {:error, reason} ->
         {:error, "Failed to get scene info: #{reason}", state}
+    end
+  end
+
+  def handle_export_bmesh(_args, state, temp_dir) do
+    case BpyMcp.BpyMesh.export_bmesh_scene(temp_dir) do
+      {:ok, bmesh_data} ->
+        {:ok, %{content: [text("BMesh data: #{inspect(bmesh_data)}")]}, state}
+      {:error, reason} ->
+        {:error, "Failed to export BMesh: #{reason}", state}
     end
   end
 

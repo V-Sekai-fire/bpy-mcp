@@ -19,7 +19,11 @@ defmodule BpyMcp.Application do
     System.put_env("DISPLAY", "")
 
     # Force Vulkan backend for headless rendering
-    System.put_env("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/intel_icd.x86_64.json:/usr/share/vulkan/icd.d/radeon_icd.x86_64.json")
+    System.put_env(
+      "VK_ICD_FILENAMES",
+      "/usr/share/vulkan/icd.d/intel_icd.x86_64.json:/usr/share/vulkan/icd.d/radeon_icd.x86_64.json"
+    )
+
     System.put_env("VULKAN_SDK", "")
     System.put_env("VK_LAYER_PATH", "")
 
@@ -57,11 +61,12 @@ defmodule BpyMcp.Application do
     ]
 
     # Only start stdio server in production, not in tests
-    children = if Mix.env() == :test do
-      children
-    else
-      children ++ [{BpyMcp.StdioServer, []}]
-    end
+    children =
+      if Mix.env() == :test do
+        children
+      else
+        children ++ [{BpyMcp.StdioServer, []}]
+      end
 
     opts = [strategy: :one_for_one, name: BpyMcp.Supervisor]
     Supervisor.start_link(children, opts)
