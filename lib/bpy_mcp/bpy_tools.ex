@@ -75,7 +75,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -147,7 +147,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -216,7 +216,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -277,7 +277,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -417,7 +417,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}
@@ -569,7 +569,7 @@ result
     result
     """
 
-    case Pythonx.eval(code, %{working_directory: temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}
