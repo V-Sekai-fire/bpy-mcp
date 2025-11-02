@@ -125,15 +125,9 @@ defmodule BpyMcp.NativeService do
 
   @impl true
   def handle_tool_call("bpy_execute_command", %{"commands" => commands} = _args, state) do
-    # Reset scene for fresh command list execution
-    case BpyMcp.BpyTools.reset_scene() do
-      {:ok, _reset_msg} ->
-        # Execute commands individually but return only the last result
-        execute_commands_individually(commands, state)
-
-      {:error, reset_reason} ->
-        {:error, "Failed to reset scene: #{reset_reason}", state}
-    end
+    # Execute commands individually but return only the last result
+    # Each command creates a new Python context
+    execute_commands_individually(commands, state)
   end
 
   # Execute commands individually but return only the last result

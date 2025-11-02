@@ -300,8 +300,8 @@ defmodule BpyMcp.BpyTools do
     - camera_location: [x, y, z] position of the camera
     - camera_rotation: [x, y, z] rotation of the camera (Euler angles in degrees)
     - focal_length: Camera focal length in mm
-    - resolution_x: Render width
-    - resolution_y: Render height
+    - resolution_x: Render width (maximum 512)
+    - resolution_y: Render height (maximum 512)
 
   ## Returns
     - `{:ok, map()}` - Photo data with base64 encoded image
@@ -309,6 +309,9 @@ defmodule BpyMcp.BpyTools do
   """
   @spec take_photo(String.t() | nil, [number()], [number()], number(), integer(), integer()) :: {:ok, map()} | {:error, String.t()}
   def take_photo(filepath \\ nil, camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 256, resolution_y \\ 256) do
+    # Enforce hard maximum of 512x512 for photos
+    resolution_x = min(resolution_x, 512)
+    resolution_y = min(resolution_y, 512)
     case ensure_pythonx() do
       :ok ->
         do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
@@ -673,7 +676,12 @@ result
   @doc false
   def test_mock_render_image(filepath, resolution_x, resolution_y), do: mock_render_image(filepath, resolution_x, resolution_y)
   @doc false
-  def test_mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y), do: mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
+  def test_mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+    # Apply the same clamping logic as the main function
+    resolution_x = min(resolution_x, 512)
+    resolution_y = min(resolution_y, 512)
+    mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
+  end
   @doc false
   def test_mock_get_scene_info(), do: mock_get_scene_info()
   @doc false

@@ -153,6 +153,53 @@ defmodule BpyMcp.BpyToolsTest do
     end
   end
 
+  describe "take_photo/6" do
+    test "takes photo with default parameters" do
+      result = BpyTools.test_mock_take_photo(nil, [7.0, -7.0, 5.0], [60.0, 0.0, 45.0], 50.0, 256, 256)
+      assert {:ok, photo_data} = result
+      assert is_map(photo_data)
+      assert photo_data["resolution"] == [256, 256]
+      assert photo_data["camera_location"] == [7.0, -7.0, 5.0]
+      assert photo_data["camera_rotation"] == [60.0, 0.0, 45.0]
+      assert photo_data["focal_length"] == 50.0
+    end
+
+    test "enforces 512x512 maximum resolution - clamps larger values" do
+      # Test with resolution larger than 512x512
+      result = BpyTools.test_mock_take_photo(nil, [0, 0, 0], [0, 0, 0], 50.0, 1024, 768)
+      assert {:ok, photo_data} = result
+      assert photo_data["resolution"] == [512, 512]  # Should be clamped to 512x512
+    end
+
+    test "allows resolution up to 512x512" do
+      result = BpyTools.test_mock_take_photo(nil, [0, 0, 0], [0, 0, 0], 50.0, 512, 512)
+      assert {:ok, photo_data} = result
+      assert photo_data["resolution"] == [512, 512]
+    end
+
+    test "allows resolution smaller than 512x512" do
+      result = BpyTools.test_mock_take_photo(nil, [0, 0, 0], [0, 0, 0], 50.0, 256, 128)
+      assert {:ok, photo_data} = result
+      assert photo_data["resolution"] == [256, 128]
+    end
+
+    test "clamps only the dimension that exceeds 512" do
+      result = BpyTools.test_mock_take_photo(nil, [0, 0, 0], [0, 0, 0], 50.0, 400, 600)
+      assert {:ok, photo_data} = result
+      assert photo_data["resolution"] == [400, 512]  # Only height clamped
+    end
+
+    test "handles custom camera parameters" do
+      result = BpyTools.test_mock_take_photo("/tmp/custom.png", [10, 20, 30], [45, 90, 180], 35.0, 300, 200)
+      assert {:ok, photo_data} = result
+      assert photo_data["filepath"] == "/tmp/custom.png"
+      assert photo_data["camera_location"] == [10, 20, 30]
+      assert photo_data["camera_rotation"] == [45, 90, 180]
+      assert photo_data["focal_length"] == 35.0
+      assert photo_data["resolution"] == [300, 200]
+    end
+  end
+
   describe "mock functions" do
     test "test_mock_create_cube returns expected result" do
       result = BpyTools.test_mock_create_cube("TestCube", [1, 2, 3], 5.0)
@@ -172,6 +219,13 @@ defmodule BpyMcp.BpyToolsTest do
     test "test_mock_render_image returns expected result" do
       result = BpyTools.test_mock_render_image("/tmp/test.png", 2560, 1440)
       assert {:ok, "Mock rendered image to /tmp/test.png at 2560x1440"} = result
+    end
+
+    test "test_mock_take_photo returns expected result" do
+      result = BpyTools.test_mock_take_photo(nil, [7.0, -7.0, 5.0], [60.0, 0.0, 45.0], 50.0, 256, 256)
+      assert {:ok, photo_data} = result
+      assert is_map(photo_data)
+      assert photo_data["resolution"] == [256, 256]
     end
 
     test "test_mock_get_scene_info returns expected result" do
