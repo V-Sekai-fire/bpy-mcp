@@ -20,7 +20,6 @@ defmodule BpyMcp.NativeService do
     "create_cube",
     "create_sphere",
     "get_scene_info",
-    "take_photo",
     "reset_scene"
   ])
 
@@ -59,21 +58,6 @@ defmodule BpyMcp.NativeService do
       handler: :handle_get_scene_info,
       schema: %{type: "object", properties: %{}},
       description: "Get information about the current Blender scene"
-    },
-    "take_photo" => %{
-      handler: :handle_take_photo,
-      schema: %{
-        type: "object",
-        properties: %{
-          filepath: %{type: "string", description: "Output file path for the photo", default: "photo.png"},
-          camera_location: %{type: "array", items: %{type: "number"}, description: "Camera position as [x, y, z] coordinates", default: [7.0, -7.0, 5.0]},
-          camera_rotation: %{type: "array", items: %{type: "number"}, description: "Camera rotation as [x, y, z] Euler angles in degrees", default: [60.0, 0.0, 45.0]},
-          focal_length: %{type: "number", description: "Camera focal length in mm", default: 50.0},
-          resolution_x: %{type: "integer", description: "Render width", default: 1920},
-          resolution_y: %{type: "integer", description: "Render height", default: 1080}
-        }
-      },
-      description: "Take a photo (render the current scene from camera view)"
     }
   }
 
@@ -229,27 +213,6 @@ defmodule BpyMcp.NativeService do
         {:ok, %{content: [text("Scene info: #{inspect(info)}")]}, state}
       {:error, reason} ->
         {:error, "Failed to get scene info: #{reason}", state}
-    end
-  end
-
-  def handle_take_photo(args, state, temp_dir) do
-    filepath = Map.get(args, "filepath", nil)
-    camera_location = Map.get(args, "camera_location", [7.0, -7.0, 5.0])
-    camera_rotation = Map.get(args, "camera_rotation", [60.0, 0.0, 45.0])
-    focal_length = Map.get(args, "focal_length", 50.0)
-    resolution_x = Map.get(args, "resolution_x", 256)
-    resolution_y = Map.get(args, "resolution_y", 256)
-    case BpyMcp.BpyTools.take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y, temp_dir) do
-      {:ok, photo_data} when is_map(photo_data) ->
-        # Return photo as markdown image
-        base64_data = Map.get(photo_data, "image_data", "")
-        markdown_image = "![Photo](data:image/png;base64,#{base64_data})"
-        {:ok, %{content: [text(markdown_image)]}, state}
-      {:ok, result} ->
-        # Fallback for string results
-        {:ok, %{content: [text("Result: #{result}")]}, state}
-      {:error, reason} ->
-        {:error, "Failed to take photo: #{reason}", state}
     end
   end
 
