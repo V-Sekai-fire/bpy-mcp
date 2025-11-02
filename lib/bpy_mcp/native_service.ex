@@ -22,7 +22,8 @@ defmodule BpyMcp.NativeService do
                       "create_sphere",
                       "get_scene_info",
                       "reset_scene",
-                      "export_bmesh"
+                      "export_bmesh",
+                      "import_bmesh"
                     ])
 
   # Command registry - maps command names to handler functions and schemas
@@ -75,6 +76,16 @@ defmodule BpyMcp.NativeService do
       handler: :handle_export_bmesh,
       schema: %{type: "object", properties: %{}},
       description: "Export the current Blender scene as BMesh data in EXT_mesh_bmesh format"
+    },
+    "import_bmesh" => %{
+      handler: :handle_import_bmesh,
+      schema: %{
+        type: "object",
+        properties: %{
+          gltf_data: %{type: "string", description: "glTF JSON data with EXT_mesh_bmesh extension to import"}
+        }
+      },
+      description: "Import BMesh data from glTF JSON with EXT_mesh_bmesh extension"
     }
   }
 
@@ -248,6 +259,17 @@ defmodule BpyMcp.NativeService do
         {:ok, %{content: bmesh_data}, state}
       {:error, reason} ->
         {:error, "Failed to export BMesh: #{reason}", state}
+    end
+  end
+
+  def handle_import_bmesh(args, state, temp_dir) do
+    gltf_data = Map.get(args, "gltf_data", "")
+
+    case BpyMcp.BpyMesh.import_bmesh_scene(gltf_data) do
+      {:ok, result} ->
+        {:ok, %{content: [text("Result: #{result}")]}, state}
+      {:error, reason} ->
+        {:error, "Failed to import BMesh: #{reason}", state}
     end
   end
 
