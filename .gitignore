@@ -66,3 +66,4 @@ config/*.local.exs
 # Dialyzer
 .dialyzer_ignore.exs
 .dialyzer/
+scene.png
