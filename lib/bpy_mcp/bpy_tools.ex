@@ -14,6 +14,8 @@ defmodule BpyMcp.BpyTools do
 
   require Logger
 
+
+
   @type bpy_result :: {:ok, term()} | {:error, String.t()}
 
   @doc """
@@ -294,7 +296,7 @@ defmodule BpyMcp.BpyTools do
   Takes a photo (renders the current scene from camera view).
 
   ## Parameters
-    - filepath: Output file path for the photo
+    - filepath: Output file path for the photo (optional)
     - camera_location: [x, y, z] position of the camera
     - camera_rotation: [x, y, z] rotation of the camera (Euler angles in degrees)
     - focal_length: Camera focal length in mm
@@ -302,11 +304,11 @@ defmodule BpyMcp.BpyTools do
     - resolution_y: Render height
 
   ## Returns
-    - `{:ok, String.t()}` - Success message
+    - `{:ok, map()}` - Photo data with base64 encoded image
     - `{:error, String.t()}` - Error message
   """
-  @spec take_photo(String.t(), [number()], [number()], number(), integer(), integer()) :: bpy_result()
-  def take_photo(filepath \\ "photo.png", camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 1920, resolution_y \\ 1080) do
+  @spec take_photo(String.t() | nil, [number()], [number()], number(), integer(), integer()) :: {:ok, map()} | {:error, String.t()}
+  def take_photo(filepath \\ nil, camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 256, resolution_y \\ 256) do
     case ensure_pythonx() do
       :ok ->
         do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
@@ -317,7 +319,23 @@ defmodule BpyMcp.BpyTools do
   end
 
   defp mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
-    {:ok, "Mock took photo and saved to #{filepath} at #{resolution_x}x#{resolution_y} from camera at #{inspect(camera_location)} with rotation #{inspect(camera_rotation)} and focal length #{focal_length}mm"}
+    # Use Briefly for consistent temporary file handling even in mock mode
+    actual_filepath = if filepath do
+      filepath
+    else
+      {:ok, temp_path} = Briefly.create(extname: ".png")
+      temp_path
+    end
+
+    {:ok, %{
+      "filepath" => actual_filepath,
+      "resolution" => [resolution_x, resolution_y],
+      "camera_location" => camera_location,
+      "camera_rotation" => camera_rotation,
+      "focal_length" => focal_length,
+      "image_data" => "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "image_format" => "png"
+    }}
   end
 
   defp do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
@@ -328,45 +346,78 @@ defmodule BpyMcp.BpyTools do
     location_str = camera_location |> Enum.map(&to_string/1) |> Enum.join(", ")
     rotation_str = camera_rotation |> Enum.map(&to_string/1) |> Enum.join(", ")
 
+    # Use Briefly to create a temporary file if no filepath provided
+    actual_filepath = if filepath do
+      filepath
+    else
+      {:ok, temp_path} = Briefly.create(extname: ".png")
+      temp_path
+    end
+
     code = """
     import bpy
     import math
+    import base64
 
     # Set render settings for photo
     bpy.context.scene.render.resolution_x = #{resolution_x}
     bpy.context.scene.render.resolution_y = #{resolution_y}
-    bpy.context.scene.render.filepath = '#{filepath}'
+    bpy.context.scene.render.filepath = '#{actual_filepath}'
 
     # Ensure camera exists
     if not bpy.context.scene.camera:
         bpy.ops.object.camera_add()
-        camera = bpy.context.active_object
-        camera.name = 'Camera'
-        bpy.context.scene.camera = camera
+        try:
+            camera = bpy.context.active_object
+            if camera:
+                camera.name = 'Camera'
+                bpy.context.scene.camera = camera
+        except AttributeError:
+            # If we can't access active_object, just continue
+            pass
 
     # Get the camera
     camera = bpy.context.scene.camera
+    if not camera:
+        result = "Failed to create or access camera"
+    else:
+        # Set camera position
+        camera.location = (#{location_str})
 
-    # Set camera position
-    camera.location = (#{location_str})
+        # Set camera rotation (convert degrees to radians)
+        camera.rotation_euler = (math.radians(#{Enum.at(camera_rotation, 0)}), math.radians(#{Enum.at(camera_rotation, 1)}), math.radians(#{Enum.at(camera_rotation, 2)}))
 
-    # Set camera rotation (convert degrees to radians)
-    camera.rotation_euler = (math.radians(#{Enum.at(camera_rotation, 0)}), math.radians(#{Enum.at(camera_rotation, 1)}), math.radians(#{Enum.at(camera_rotation, 2)}))
+        # Set camera focal length
+        camera.data.lens = #{focal_length}
 
-    # Set camera focal length
-    camera.data.lens = #{focal_length}
+        # Render the photo
+        bpy.ops.render.render(write_still=True)
 
-    # Render the photo
-    bpy.ops.render.render(write_still=True)
+        # Read the rendered image and encode as base64
+        try:
+            with open('#{actual_filepath}', 'rb') as f:
+                image_data = f.read()
+            image_b64 = base64.b64encode(image_data).decode('utf-8')
 
-    result = f"Took photo and saved to #{filepath} at #{resolution_x}x#{resolution_y} from camera at (#{location_str}) with rotation (#{rotation_str}) and focal length #{focal_length}mm"
+            result = {
+                "filepath": '#{actual_filepath}',
+                "resolution": [#{resolution_x}, #{resolution_y}],
+                "camera_location": [#{location_str}],
+                "camera_rotation": [#{rotation_str}],
+                "focal_length": #{focal_length},
+                "image_data": image_b64,
+                "image_format": "png"
+            }
+        except Exception as e:
+            result = f"Rendered photo but failed to encode: {str(e)}"
     result
     """
 
     case Pythonx.eval(code, %{}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
-          result when is_binary(result) -> {:ok, result}
+          result when is_map(result) -> {:ok, result}
+          result when is_binary(result) -> {:error, result}
           _ -> {:error, "Failed to decode take_photo result"}
         end
 
@@ -586,15 +637,38 @@ result
       :mock
     else
       # Test if both Pythonx works and bpy is available
-      case Pythonx.eval("import bpy; 1 + 1", %{}) do
-        {result, _globals} ->
-          case Pythonx.decode(result) do
-            2 -> :ok
-            _ -> :mock
-          end
+      # Suppress stderr during Blender import to prevent EGL errors from corrupting stdio
+      try do
+        code = """
+        import sys
+        import os
+        from contextlib import redirect_stderr
+        import io
 
-        _ ->
-          :mock
+        # Suppress stderr during Blender import to prevent EGL errors
+        stderr_capture = io.StringIO()
+        try:
+          with redirect_stderr(stderr_capture):
+            import bpy
+            result = bpy.context.scene is not None
+        except Exception as e:
+          result = False
+
+        result
+        """
+
+        case Pythonx.eval(code, %{}) do
+          {result, _globals} ->
+            case Pythonx.decode(result) do
+              true -> :ok
+              _ -> :mock
+            end
+
+          _ ->
+            :mock
+        end
+      rescue
+        _ -> :mock
       end
     end
   end

@@ -23,7 +23,7 @@ defmodule BpyMcp.MixProject do
   def application do
     [
       mod: {BpyMcp.Application, []},
-      applications: [:logger, :ex_mcp, :pythonx]
+      applications: [:logger, :ex_mcp, :pythonx, :briefly]
     ]
   end
 
@@ -33,6 +33,7 @@ defmodule BpyMcp.MixProject do
       {:ex_mcp, git: "https://github.com/azmaveth/ex_mcp.git", ref: "46bc6fd050539b41bacd4d1409c23b1939c3728b"},
       {:jason, "~> 1.4"},
       {:pythonx, "~> 0.4.0", runtime: false},
+      {:briefly, "~> 0.5.1"},
       {:dialyxir, "~> 1.4.6", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

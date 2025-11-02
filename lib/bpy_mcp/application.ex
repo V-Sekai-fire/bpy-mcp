@@ -41,8 +41,9 @@ defmodule BpyMcp.Application do
     # and console output that breaks MCP stdio protocol
     configure_headless_blender()
 
-    # Ensure Pythonx is started for Blender support
+    # Ensure required dependencies are started
     Application.ensure_all_started(:pythonx)
+    Application.ensure_all_started(:briefly)
 
     children = [
       # Registry for scene managers

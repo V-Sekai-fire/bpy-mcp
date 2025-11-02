@@ -204,14 +204,20 @@ defmodule BpyMcp.NativeService do
   end
 
   def handle_take_photo(args, state) do
-    filepath = Map.get(args, "filepath", "photo.png")
+    filepath = Map.get(args, "filepath", nil)
     camera_location = Map.get(args, "camera_location", [7.0, -7.0, 5.0])
     camera_rotation = Map.get(args, "camera_rotation", [60.0, 0.0, 45.0])
     focal_length = Map.get(args, "focal_length", 50.0)
-    resolution_x = Map.get(args, "resolution_x", 1920)
-    resolution_y = Map.get(args, "resolution_y", 1080)
+    resolution_x = Map.get(args, "resolution_x", 256)
+    resolution_y = Map.get(args, "resolution_y", 256)
     case BpyMcp.BpyTools.take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+      {:ok, photo_data} when is_map(photo_data) ->
+        # Return photo as markdown image
+        base64_data = Map.get(photo_data, "image_data", "")
+        markdown_image = "![Photo](data:image/png;base64,#{base64_data})"
+        {:ok, %{content: [text(markdown_image)]}, state}
       {:ok, result} ->
+        # Fallback for string results
         {:ok, %{content: [text("Result: #{result}")]}, state}
       {:error, reason} ->
         {:error, "Failed to take photo: #{reason}", state}
