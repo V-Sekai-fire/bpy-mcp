@@ -2,6 +2,7 @@
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule BpyMcp.NativeService do
+  import Briefly
   @moduledoc """
   Native BEAM service for Blender bpy MCP using ex_mcp library.
   Provides 3D modeling and rendering tools via MCP protocol.
@@ -19,11 +20,17 @@ defmodule BpyMcp.NativeService do
     "create_cube",
     "create_sphere",
     "get_scene_info",
-    "take_photo"
+    "take_photo",
+    "reset_scene"
   ])
 
   # Command registry - maps command names to handler functions and schemas
   @commands %{
+    "reset_scene" => %{
+      handler: :handle_reset_scene,
+      schema: %{type: "object", properties: %{}},
+      description: "Resets the Blender scene to a clean state"
+    },
     "create_cube" => %{
       handler: :handle_create_cube,
       schema: %{
@@ -125,13 +132,31 @@ defmodule BpyMcp.NativeService do
 
   @impl true
   def handle_tool_call("bpy_execute_command", %{"commands" => commands} = _args, state) do
-    # Execute commands individually but return only the last result
-    # Each command creates a new Python context
-    execute_commands_individually(commands, state)
+    # Create a temporary directory for this command list execution
+    case Briefly.create(type: :directory) do
+      {:ok, temp_dir} ->
+        try do
+          # Reset scene for fresh command list execution within the temporary directory
+          case BpyMcp.BpyTools.reset_scene(temp_dir) do
+            {:ok, _reset_msg} ->
+              # Execute commands individually but return only the last result
+              execute_commands_individually(commands, state, temp_dir)
+
+            {:error, reset_reason} ->
+              {:error, "Failed to reset scene: #{reset_reason}", state}
+          end
+        after
+          # Ensure cleanup of the temporary directory
+          Briefly.cleanup(temp_dir)
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to create temporary directory: #{reason}", state}
+    end
   end
 
   # Execute commands individually but return only the last result
-  defp execute_commands_individually(commands, state) do
+  defp execute_commands_individually(commands, state, temp_dir) do
     results = Enum.map(commands, fn %{"command" => command_name} = command_spec ->
       command_args = Map.get(command_spec, "args", %{})
 
@@ -139,7 +164,8 @@ defmodule BpyMcp.NativeService do
       if MapSet.member?(@allowed_commands, command_name) do
         case Map.get(@commands, command_name) do
           %{handler: handler} ->
-            case apply(__MODULE__, handler, [command_args, state]) do
+            # Pass temp_dir to handler functions
+            case apply(__MODULE__, handler, [command_args, state, temp_dir]) do
               {:ok, response, _new_state} -> {:ok, command_name, response}
               {:error, reason, _new_state} -> {:error, command_name, reason}
             end
@@ -164,11 +190,20 @@ defmodule BpyMcp.NativeService do
 
   # Command handler functions - return MCP response format
 
-  def handle_create_cube(args, state) do
+  def handle_reset_scene(_args, state, temp_dir) do
+    case BpyMcp.BpyTools.reset_scene(temp_dir) do
+      {:ok, result} ->
+        {:ok, %{content: [text("Result: #{result}")]}, state}
+      {:error, reason} ->
+        {:error, "Failed to reset scene: #{reason}", state}
+    end
+  end
+
+  def handle_create_cube(args, state, temp_dir) do
     name = Map.get(args, "name", "Cube")
     location = Map.get(args, "location", [0, 0, 0])
     size = Map.get(args, "size", 2.0)
-    case BpyMcp.BpyTools.create_cube(name, location, size) do
+    case BpyMcp.BpyTools.create_cube(name, location, size, temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
       {:error, reason} ->
@@ -176,11 +211,11 @@ defmodule BpyMcp.NativeService do
     end
   end
 
-  def handle_create_sphere(args, state) do
+  def handle_create_sphere(args, state, temp_dir) do
     name = Map.get(args, "name", "Sphere")
     location = Map.get(args, "location", [0, 0, 0])
     radius = Map.get(args, "radius", 1.0)
-    case BpyMcp.BpyTools.create_sphere(name, location, radius) do
+    case BpyMcp.BpyTools.create_sphere(name, location, radius, temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
       {:error, reason} ->
@@ -188,8 +223,8 @@ defmodule BpyMcp.NativeService do
     end
   end
 
-  def handle_get_scene_info(_args, state) do
-    case BpyMcp.BpyTools.get_scene_info() do
+  def handle_get_scene_info(_args, state, temp_dir) do
+    case BpyMcp.BpyTools.get_scene_info(temp_dir) do
       {:ok, info} ->
         {:ok, %{content: [text("Scene info: #{inspect(info)}")]}, state}
       {:error, reason} ->
@@ -197,14 +232,14 @@ defmodule BpyMcp.NativeService do
     end
   end
 
-  def handle_take_photo(args, state) do
+  def handle_take_photo(args, state, temp_dir) do
     filepath = Map.get(args, "filepath", nil)
     camera_location = Map.get(args, "camera_location", [7.0, -7.0, 5.0])
     camera_rotation = Map.get(args, "camera_rotation", [60.0, 0.0, 45.0])
     focal_length = Map.get(args, "focal_length", 50.0)
     resolution_x = Map.get(args, "resolution_x", 256)
     resolution_y = Map.get(args, "resolution_y", 256)
-    case BpyMcp.BpyTools.take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+    case BpyMcp.BpyTools.take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y, temp_dir) do
       {:ok, photo_data} when is_map(photo_data) ->
         # Return photo as markdown image
         base64_data = Map.get(photo_data, "image_data", "")

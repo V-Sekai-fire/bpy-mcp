@@ -30,11 +30,11 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, String.t()}` - Success message
     - `{:error, String.t()}` - Error message
   """
-  @spec create_cube(String.t(), [number()], number()) :: bpy_result()
-  def create_cube(name \\ "Cube", location \\ [0, 0, 0], size \\ 2.0) do
+  @spec create_cube(String.t(), [number()], number(), String.t()) :: bpy_result()
+  def create_cube(name \\ "Cube", location \\ [0, 0, 0], size \\ 2.0, temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_create_cube(name, location, size)
+        do_create_cube(name, location, size, temp_dir)
 
       :mock ->
         mock_create_cube(name, location, size)
@@ -45,7 +45,7 @@ defmodule BpyMcp.BpyTools do
     {:ok, "Mock created cube '#{name}' at #{inspect(location)} with size #{size}"}
   end
 
-  defp do_create_cube(name, location, size) do
+  defp do_create_cube(name, location, size, temp_dir) do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
@@ -75,7 +75,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -102,11 +102,11 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, String.t()}` - Success message
     - `{:error, String.t()}` - Error message
   """
-  @spec create_sphere(String.t(), [number()], number()) :: bpy_result()
-  def create_sphere(name \\ "Sphere", location \\ [0, 0, 0], radius \\ 1.0) do
+  @spec create_sphere(String.t(), [number()], number(), String.t()) :: bpy_result()
+  def create_sphere(name \\ "Sphere", location \\ [0, 0, 0], radius \\ 1.0, temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_create_sphere(name, location, radius)
+        do_create_sphere(name, location, radius, temp_dir)
 
       :mock ->
         mock_create_sphere(name, location, radius)
@@ -117,7 +117,7 @@ defmodule BpyMcp.BpyTools do
     {:ok, "Mock created sphere '#{name}' at #{inspect(location)} with radius #{radius}"}
   end
 
-  defp do_create_sphere(name, location, radius) do
+  defp do_create_sphere(name, location, radius, temp_dir) do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
@@ -147,7 +147,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -174,11 +174,11 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, String.t()}` - Success message
     - `{:error, String.t()}` - Error message
   """
-  @spec set_material(String.t(), String.t(), [number()]) :: bpy_result()
-  def set_material(object_name, material_name \\ "Material", color \\ [0.8, 0.8, 0.8, 1.0]) do
+  @spec set_material(String.t(), String.t(), [number()], String.t()) :: bpy_result()
+  def set_material(object_name, material_name \\ "Material", color \\ [0.8, 0.8, 0.8, 1.0], temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_set_material(object_name, material_name, color)
+        do_set_material(object_name, material_name, color, temp_dir)
 
       :mock ->
         mock_set_material(object_name, material_name, color)
@@ -189,7 +189,7 @@ defmodule BpyMcp.BpyTools do
     {:ok, "Mock set material '#{material_name}' with color #{inspect(color)} on object '#{object_name}'"}
   end
 
-  defp do_set_material(object_name, material_name, color) do
+  defp do_set_material(object_name, material_name, color, temp_dir) do
     code = """
     import bpy
 
@@ -216,7 +216,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -243,11 +243,11 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, String.t()}` - Success message
     - `{:error, String.t()}` - Error message
   """
-  @spec render_image(String.t(), integer(), integer()) :: bpy_result()
-  def render_image(filepath, resolution_x \\ 1920, resolution_y \\ 1080) do
+  @spec render_image(String.t(), integer(), integer(), String.t()) :: bpy_result()
+  def render_image(filepath, resolution_x \\ 1920, resolution_y \\ 1080, temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_render_image(filepath, resolution_x, resolution_y)
+        do_render_image(filepath, resolution_x, resolution_y, temp_dir)
 
       :mock ->
         mock_render_image(filepath, resolution_x, resolution_y)
@@ -258,7 +258,7 @@ defmodule BpyMcp.BpyTools do
     {:ok, "Mock rendered image to #{filepath} at #{resolution_x}x#{resolution_y}"}
   end
 
-  defp do_render_image(filepath, resolution_x, resolution_y) do
+  defp do_render_image(filepath, resolution_x, resolution_y, temp_dir) do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
@@ -277,7 +277,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -307,14 +307,14 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, map()}` - Photo data with base64 encoded image
     - `{:error, String.t()}` - Error message
   """
-  @spec take_photo(String.t() | nil, [number()], [number()], number(), integer(), integer()) :: {:ok, map()} | {:error, String.t()}
-  def take_photo(filepath \\ nil, camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 256, resolution_y \\ 256) do
+  @spec take_photo(String.t() | nil, [number()], [number()], number(), integer(), integer(), String.t()) :: {:ok, map()} | {:error, String.t()}
+  def take_photo(filepath \\ nil, camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 256, resolution_y \\ 256, temp_dir) do
     # Enforce hard maximum of 512x512 for photos
     resolution_x = min(resolution_x, 512)
     resolution_y = min(resolution_y, 512)
     case ensure_pythonx() do
       :ok ->
-        do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
+        do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y, temp_dir)
 
       :mock ->
         mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
@@ -341,7 +341,7 @@ defmodule BpyMcp.BpyTools do
     }}
   end
 
-  defp do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+  defp do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y, temp_dir) do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
@@ -353,7 +353,7 @@ defmodule BpyMcp.BpyTools do
     actual_filepath = if filepath do
       filepath
     else
-      {:ok, temp_path} = Briefly.create(extname: ".png")
+      {:ok, temp_path} = Briefly.create(extname: ".png", directory: temp_dir)
       temp_path
     end
 
@@ -361,11 +361,12 @@ defmodule BpyMcp.BpyTools do
     import bpy
     import math
     import base64
+    import os
 
     # Set render settings for photo
     bpy.context.scene.render.resolution_x = #{resolution_x}
     bpy.context.scene.render.resolution_y = #{resolution_y}
-    bpy.context.scene.render.filepath = '#{actual_filepath}'
+    bpy.context.scene.render.filepath = os.path.join('#{temp_dir}', '#{Path.basename(actual_filepath)}')
 
     # Ensure camera exists
     if not bpy.context.scene.camera:
@@ -398,12 +399,12 @@ defmodule BpyMcp.BpyTools do
 
         # Read the rendered image and encode as base64
         try:
-            with open('#{actual_filepath}', 'rb') as f:
+            with open(bpy.context.scene.render.filepath, 'rb') as f:
                 image_data = f.read()
             image_b64 = base64.b64encode(image_data).decode('utf-8')
 
             result = {
-                "filepath": '#{actual_filepath}',
+                "filepath": bpy.context.scene.render.filepath,
                 "resolution": [#{resolution_x}, #{resolution_y}],
                 "camera_location": [#{location_str}],
                 "camera_rotation": [#{rotation_str}],
@@ -416,7 +417,7 @@ defmodule BpyMcp.BpyTools do
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}
@@ -439,11 +440,11 @@ defmodule BpyMcp.BpyTools do
     - `{:ok, String.t()}` - Success message
     - `{:error, String.t()}` - Error message
   """
-  @spec reset_scene() :: bpy_result()
-  def reset_scene do
+  @spec reset_scene(String.t()) :: bpy_result()
+  def reset_scene(temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_reset_scene()
+        do_reset_scene(temp_dir)
 
       :mock ->
         mock_reset_scene()
@@ -454,7 +455,7 @@ defmodule BpyMcp.BpyTools do
     {:ok, "Mock reset scene - cleared all objects"}
   end
 
-  defp do_reset_scene do
+  defp do_reset_scene(temp_dir) do
     code = """
 import bpy
 
@@ -488,7 +489,7 @@ result = "Scene reset - all objects cleared"
 result
 """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_binary(result) -> {:ok, result}
@@ -510,11 +511,11 @@ result
     - `{:ok, map()}` - Scene information
     - `{:error, String.t()}` - Error message
   """
-  @spec get_scene_info() :: bpy_result()
-  def get_scene_info do
+  @spec get_scene_info(String.t()) :: bpy_result()
+  def get_scene_info(temp_dir) do
     case ensure_pythonx() do
       :ok ->
-        do_get_scene_info()
+        do_get_scene_info(temp_dir)
 
       :mock ->
         mock_get_scene_info()
@@ -534,7 +535,7 @@ result
     }}
   end
 
-  defp do_get_scene_info do
+  defp do_get_scene_info(temp_dir) do
     # Ensure scene FPS is set to 30 before getting info
     ensure_scene_fps()
 
@@ -568,7 +569,7 @@ result
     result
     """
 
-    case Pythonx.eval(code, %{}) do
+    case Pythonx.eval(code, %{working_directory: temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}
