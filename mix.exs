@@ -10,7 +10,6 @@ defmodule BpyMcp.MixProject do
       version: "0.1.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: BpyMcp.CLI],
       releases: releases(),
       deps: deps(),
       dialyzer: [

@@ -47,15 +47,24 @@ defmodule BpyMcp.BpyTools do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
+    # Format location as Python tuple
+    location_str = location |> Enum.map(&to_string/1) |> Enum.join(", ")
+
     code = """
     import bpy
 
-    # Create cube
-    bpy.ops.mesh.primitive_cube_add(size=#{size}, location=#{inspect(location)})
-    cube = bpy.context.active_object
-    cube.name = '#{name}'
+    # Ensure we have a scene
+    if not bpy.context.scene:
+        bpy.ops.scene.new(type='NEW')
 
-    result = f"Created cube '{cube.name}' at {list(cube.location)} with size #{size}"
+    # Create cube
+    bpy.ops.mesh.primitive_cube_add(size=#{size}, location=(#{location_str}))
+    cube = bpy.context.active_object
+    if cube:
+        cube.name = '#{name}'
+        result = f"Created cube '{cube.name}' at {list(cube.location)} with size #{size}"
+    else:
+        result = f"Failed to create cube - no active object after creation"
     result
     """
 
@@ -105,15 +114,24 @@ defmodule BpyMcp.BpyTools do
     # Ensure scene FPS is set to 30
     ensure_scene_fps()
 
+    # Format location as Python tuple
+    location_str = location |> Enum.map(&to_string/1) |> Enum.join(", ")
+
     code = """
     import bpy
 
-    # Create sphere
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=#{radius}, location=#{inspect(location)})
-    sphere = bpy.context.active_object
-    sphere.name = '#{name}'
+    # Ensure we have a scene
+    if not bpy.context.scene:
+        bpy.ops.scene.new(type='NEW')
 
-    result = f"Created sphere '{sphere.name}' at {list(sphere.location)} with radius #{radius}"
+    # Create sphere
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=#{radius}, location=(#{location_str}))
+    sphere = bpy.context.active_object
+    if sphere:
+        sphere.name = '#{name}'
+        result = f"Created sphere '{sphere.name}' at {list(sphere.location)} with radius #{radius}"
+    else:
+        result = f"Failed to create sphere - no active object after creation"
     result
     """
 
@@ -166,7 +184,7 @@ defmodule BpyMcp.BpyTools do
     # Find object
     obj = bpy.data.objects.get('#{object_name}')
     if not obj:
-        result = f"Object '{obj_name}' not found"
+        result = f"Object '#{object_name}' not found"
     else:
         # Create or get material
         mat = bpy.data.materials.get('#{material_name}')
@@ -263,6 +281,94 @@ defmodule BpyMcp.BpyTools do
   end
 
   @doc """
+  Takes a photo (renders the current scene from camera view).
+
+  ## Parameters
+    - filepath: Output file path for the photo
+    - camera_location: [x, y, z] position of the camera
+    - camera_rotation: [x, y, z] rotation of the camera (Euler angles in degrees)
+    - focal_length: Camera focal length in mm
+    - resolution_x: Render width
+    - resolution_y: Render height
+
+  ## Returns
+    - `{:ok, String.t()}` - Success message
+    - `{:error, String.t()}` - Error message
+  """
+  @spec take_photo(String.t(), [number()], [number()], number(), integer(), integer()) :: bpy_result()
+  def take_photo(filepath \\ "photo.png", camera_location \\ [7.0, -7.0, 5.0], camera_rotation \\ [60.0, 0.0, 45.0], focal_length \\ 50.0, resolution_x \\ 1920, resolution_y \\ 1080) do
+    case ensure_pythonx() do
+      :ok ->
+        do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
+
+      :mock ->
+        mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
+    end
+  end
+
+  defp mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+    {:ok, "Mock took photo and saved to #{filepath} at #{resolution_x}x#{resolution_y} from camera at #{inspect(camera_location)} with rotation #{inspect(camera_rotation)} and focal length #{focal_length}mm"}
+  end
+
+  defp do_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+    # Ensure scene FPS is set to 30
+    ensure_scene_fps()
+
+    # Format location and rotation as Python tuples
+    location_str = camera_location |> Enum.map(&to_string/1) |> Enum.join(", ")
+    rotation_str = camera_rotation |> Enum.map(&to_string/1) |> Enum.join(", ")
+
+    code = """
+    import bpy
+    import math
+
+    # Set render settings for photo
+    bpy.context.scene.render.resolution_x = #{resolution_x}
+    bpy.context.scene.render.resolution_y = #{resolution_y}
+    bpy.context.scene.render.filepath = '#{filepath}'
+
+    # Ensure camera exists
+    if not bpy.context.scene.camera:
+        bpy.ops.object.camera_add()
+        camera = bpy.context.active_object
+        camera.name = 'Camera'
+        bpy.context.scene.camera = camera
+
+    # Get the camera
+    camera = bpy.context.scene.camera
+
+    # Set camera position
+    camera.location = (#{location_str})
+
+    # Set camera rotation (convert degrees to radians)
+    camera.rotation_euler = (math.radians(#{Enum.at(camera_rotation, 0)}), math.radians(#{Enum.at(camera_rotation, 1)}), math.radians(#{Enum.at(camera_rotation, 2)}))
+
+    # Set camera focal length
+    camera.data.lens = #{focal_length}
+
+    # Render the photo
+    bpy.ops.render.render(write_still=True)
+
+    result = f"Took photo and saved to #{filepath} at #{resolution_x}x#{resolution_y} from camera at (#{location_str}) with rotation (#{rotation_str}) and focal length #{focal_length}mm"
+    result
+    """
+
+    case Pythonx.eval(code, %{}) do
+      {result, _globals} ->
+        case Pythonx.decode(result) do
+          result when is_binary(result) -> {:ok, result}
+          _ -> {:error, "Failed to decode take_photo result"}
+        end
+
+      error ->
+        {:error, inspect(error)}
+    end
+  rescue
+    e ->
+      {:error, Exception.message(e)}
+  end
+
+  @doc """
   Gets information about the current Blender scene.
 
   ## Returns
@@ -302,7 +408,8 @@ defmodule BpyMcp.BpyTools do
 
     scene = bpy.context.scene
     objects = [obj.name for obj in scene.objects]
-    active_object = bpy.context.active_object.name if bpy.context.active_object else None
+    active_object = bpy.context.active_object
+    active_object_name = active_object.name if active_object else None
 
     result = {
         "scene_name": scene.name,
@@ -312,7 +419,7 @@ defmodule BpyMcp.BpyTools do
         "fps": scene.render.fps,
         "fps_base": scene.render.fps_base,
         "objects": objects,
-        "active_object": active_object
+        "active_object": active_object_name
     }
     result
     """
@@ -335,27 +442,32 @@ defmodule BpyMcp.BpyTools do
   # Helper functions
   @doc """
   Ensures the Blender scene is set to 30 FPS for animations.
-  Only executes when Pythonx/Blender is available.
+  Only executes when Pythonx/Blender is available and not in test mode.
   """
   @spec ensure_scene_fps() :: :ok
   defp ensure_scene_fps do
-    # Only try to set FPS if Pythonx is actually available
-    case check_pythonx_availability() do
-      :ok ->
-        code = """
-        import bpy
+    # In test mode, never execute Python code
+    if Mix.env() == :test do
+      :ok
+    else
+      # Only try to set FPS if Pythonx is actually available
+      case check_pythonx_availability() do
+        :ok ->
+          code = """
+          import bpy
 
-        # Set scene FPS to 30
-        bpy.context.scene.render.fps = 30
-        bpy.context.scene.render.fps_base = 1
-        """
+          # Set scene FPS to 30
+          bpy.context.scene.render.fps = 30
+          bpy.context.scene.render.fps_base = 1
+          """
 
-        case Pythonx.eval(code, %{}) do
-          {_result, _globals} -> :ok
-          _ -> :ok  # Continue even if setting FPS fails
-        end
-      :mock ->
-        :ok  # In mock mode, just return ok
+          case Pythonx.eval(code, %{}) do
+            {_result, _globals} -> :ok
+            _ -> :ok  # Continue even if setting FPS fails
+          end
+        :mock ->
+          :ok  # In mock mode, just return ok
+      end
     end
   rescue
     _ -> :ok  # Continue even if Pythonx fails
@@ -379,15 +491,21 @@ defmodule BpyMcp.BpyTools do
   end
 
   defp check_pythonx_availability do
-    case Pythonx.eval("1 + 1", %{}) do
-      {result, _globals} ->
-        case Pythonx.decode(result) do
-          2 -> :ok
-          _ -> :mock
-        end
+    # In test mode, never try to execute Python code
+    if Mix.env() == :test do
+      :mock
+    else
+      # Test if both Pythonx works and bpy is available
+      case Pythonx.eval("import bpy; 1 + 1", %{}) do
+        {result, _globals} ->
+          case Pythonx.decode(result) do
+            2 -> :ok
+            _ -> :mock
+          end
 
-      _ ->
-        :mock
+        _ ->
+          :mock
+      end
     end
   end
 
@@ -400,6 +518,8 @@ defmodule BpyMcp.BpyTools do
   def test_mock_set_material(object_name, material_name, color), do: mock_set_material(object_name, material_name, color)
   @doc false
   def test_mock_render_image(filepath, resolution_x, resolution_y), do: mock_render_image(filepath, resolution_x, resolution_y)
+  @doc false
+  def test_mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y), do: mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
   @doc false
   def test_mock_get_scene_info(), do: mock_get_scene_info()
 end

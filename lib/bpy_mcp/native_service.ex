@@ -14,126 +14,62 @@ defmodule BpyMcp.NativeService do
     name: "Blender bpy MCP Server",
     version: "0.1.0"
 
-  # Define bpy tools using ex_mcp DSL
-  deftool "bpy_create_cube" do
-    meta do
-      name("Create Cube")
-      description("Create a cube object in the Blender scene")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        name: %{
-          type: "string",
-          description: "Name for the cube object",
-          default: "Cube"
-        },
-        location: %{
-          type: "array",
-          items: %{type: "number"},
-          description: "Location as [x, y, z] coordinates",
-          default: [0, 0, 0]
-        },
-        size: %{
-          type: "number",
-          description: "Size of the cube",
-          default: 2.0
-        }
-      }
-    })
-  end
-
-  deftool "bpy_create_sphere" do
-    meta do
-      name("Create Sphere")
-      description("Create a sphere object in the Blender scene")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        name: %{
-          type: "string",
-          description: "Name for the sphere object",
-          default: "Sphere"
-        },
-        location: %{
-          type: "array",
-          items: %{type: "number"},
-          description: "Location as [x, y, z] coordinates",
-          default: [0, 0, 0]
-        },
-        radius: %{
-          type: "number",
-          description: "Radius of the sphere",
-          default: 1.0
-        }
-      }
-    })
-  end
-
-  deftool "bpy_set_material" do
-    meta do
-      name("Set Material")
-      description("Set a material on an object")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        object_name: %{
-          type: "string",
-          description: "Name of the object to apply material to"
-        },
-        material_name: %{
-          type: "string",
-          description: "Name of the material",
-          default: "Material"
-        },
-        color: %{
-          type: "array",
-          items: %{type: "number"},
-          description: "RGBA color as [r, g, b, a]",
-          default: [0.8, 0.8, 0.8, 1.0]
+  # Command registry - maps command names to handler functions and schemas
+  @commands %{
+    "create_cube" => %{
+      handler: :handle_create_cube,
+      schema: %{
+        type: "object",
+        properties: %{
+          name: %{type: "string", description: "Name for the cube object", default: "Cube"},
+          location: %{type: "array", items: %{type: "number"}, description: "Location as [x, y, z] coordinates", default: [0, 0, 0]},
+          size: %{type: "number", description: "Size of the cube", default: 2.0}
         }
       },
-      required: ["object_name"]
-    })
-  end
-
-  deftool "bpy_render_image" do
-    meta do
-      name("Render Image")
-      description("Render the current scene to an image file")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        filepath: %{
-          type: "string",
-          description: "Output file path for the rendered image"
-        },
-        resolution_x: %{
-          type: "integer",
-          description: "Render resolution width",
-          default: 1920
-        },
-        resolution_y: %{
-          type: "integer",
-          description: "Render resolution height",
-          default: 1080
+      description: "Create a cube object in the Blender scene"
+    },
+    "create_sphere" => %{
+      handler: :handle_create_sphere,
+      schema: %{
+        type: "object",
+        properties: %{
+          name: %{type: "string", description: "Name for the sphere object", default: "Sphere"},
+          location: %{type: "array", items: %{type: "number"}, description: "Location as [x, y, z] coordinates", default: [0, 0, 0]},
+          radius: %{type: "number", description: "Radius of the sphere", default: 1.0}
         }
       },
-      required: ["filepath"]
-    })
-  end
+      description: "Create a sphere object in the Blender scene"
+    },
+    "get_scene_info" => %{
+      handler: :handle_get_scene_info,
+      schema: %{type: "object", properties: %{}},
+      description: "Get information about the current Blender scene"
+    },
+    "take_photo" => %{
+      handler: :handle_take_photo,
+      schema: %{
+        type: "object",
+        properties: %{
+          filepath: %{type: "string", description: "Output file path for the photo", default: "photo.png"},
+          camera_location: %{type: "array", items: %{type: "number"}, description: "Camera position as [x, y, z] coordinates", default: [7.0, -7.0, 5.0]},
+          camera_rotation: %{type: "array", items: %{type: "number"}, description: "Camera rotation as [x, y, z] Euler angles in degrees", default: [60.0, 0.0, 45.0]},
+          focal_length: %{type: "number", description: "Camera focal length in mm", default: 50.0},
+          resolution_x: %{type: "integer", description: "Render width", default: 1920},
+          resolution_y: %{type: "integer", description: "Render height", default: 1080}
+        }
+      },
+      description: "Take a photo (render the current scene from camera view)"
+    }
+  }
 
-  deftool "bpy_get_scene_info" do
+
+
+  # Command-based tools
+
+  deftool "bpy_list_commands" do
     meta do
-      name("Get Scene Info")
-      description("Get information about the current Blender scene")
+      name("List Commands")
+      description("List all available bpy commands with their schemas")
     end
 
     input_schema(%{
@@ -142,97 +78,121 @@ defmodule BpyMcp.NativeService do
     })
   end
 
-  # Tool call handlers
-  @impl true
-  def handle_tool_call("bpy_create_cube", %{"name" => name, "location" => location, "size" => size}, state) do
-    case BpyMcp.BpyTools.create_cube(name, location, size) do
-      {:ok, result} ->
-        {:ok, %{content: [text("Result: #{result}")]}, state}
-
-      {:error, reason} ->
-        {:error, "Failed to create cube: #{reason}", state}
+  deftool "bpy_execute_command" do
+    meta do
+      name("Execute Command")
+      description("Execute a list of bpy commands with their arguments")
     end
+
+    input_schema(%{
+      type: "object",
+      properties: %{
+        commands: %{
+          type: "array",
+          description: "List of commands to execute",
+          items: %{
+            type: "object",
+            properties: %{
+              command: %{type: "string", description: "Name of the command to execute"},
+              args: %{type: "object", description: "Arguments for the command", default: %{}}
+            },
+            required: ["command"]
+          }
+        }
+      },
+      required: ["commands"]
+    })
+  end
+
+  # Command-based tool handlers
+
+  @impl true
+  def handle_tool_call("bpy_list_commands", _args, state) do
+    commands = Enum.map(@commands, fn {name, %{schema: schema, description: description}} ->
+      %{name: name, schema: schema, description: description}
+    end)
+
+    {:ok, %{content: [text("Available commands: #{inspect(commands)}")]}, state}
   end
 
   @impl true
-  def handle_tool_call("bpy_create_cube", args, state) do
-    # Handle cases with missing parameters using defaults
+  def handle_tool_call("bpy_execute_command", %{"commands" => commands} = _args, state) do
+    results = Enum.map(commands, fn %{"command" => command_name} = command_spec ->
+      case Map.get(@commands, command_name) do
+        nil ->
+          {:error, "Unknown command: #{command_name}"}
+
+        %{handler: handler} ->
+          command_args = Map.get(command_spec, "args", %{})
+          case apply(__MODULE__, handler, [command_args, state]) do
+            {:ok, response, _new_state} -> {:ok, command_name, response}
+            {:error, reason, _new_state} -> {:error, command_name, reason}
+          end
+      end
+    end)
+
+    # Check if any commands failed
+    errors = Enum.filter(results, fn {status, _, _} -> status == :error end)
+
+    if Enum.empty?(errors) do
+      success_messages = Enum.map(results, fn {:ok, cmd, resp} ->
+        content_text = resp.content |> hd() |> Map.get("text")
+        "#{cmd}: #{content_text}"
+      end)
+      {:ok, %{content: [text("All commands executed successfully:\n#{Enum.join(success_messages, "\n")}")]}, state}
+    else
+      error_messages = Enum.map(errors, fn {:error, cmd, reason} -> "#{cmd}: #{reason}" end)
+      {:error, "Some commands failed:\n#{Enum.join(error_messages, "\n")}", state}
+    end
+  end
+
+  # Command handler functions - return MCP response format
+
+  def handle_create_cube(args, state) do
     name = Map.get(args, "name", "Cube")
     location = Map.get(args, "location", [0, 0, 0])
     size = Map.get(args, "size", 2.0)
-
     case BpyMcp.BpyTools.create_cube(name, location, size) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
-
       {:error, reason} ->
         {:error, "Failed to create cube: #{reason}", state}
     end
   end
 
-  @impl true
-  def handle_tool_call("bpy_create_sphere", %{"name" => name, "location" => location, "radius" => radius}, state) do
-    case BpyMcp.BpyTools.create_sphere(name, location, radius) do
-      {:ok, result} ->
-        {:ok, %{content: [text("Result: #{result}")]}, state}
-
-      {:error, reason} ->
-        {:error, "Failed to create sphere: #{reason}", state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("bpy_create_sphere", args, state) do
-    # Handle cases with missing parameters using defaults
+  def handle_create_sphere(args, state) do
     name = Map.get(args, "name", "Sphere")
     location = Map.get(args, "location", [0, 0, 0])
     radius = Map.get(args, "radius", 1.0)
-
     case BpyMcp.BpyTools.create_sphere(name, location, radius) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
-
       {:error, reason} ->
         {:error, "Failed to create sphere: #{reason}", state}
     end
   end
 
-  @impl true
-  def handle_tool_call("bpy_set_material", %{"object_name" => object_name} = args, state) do
-    material_name = Map.get(args, "material_name", "Material")
-    color = Map.get(args, "color", [0.8, 0.8, 0.8, 1.0])
-
-    case BpyMcp.BpyTools.set_material(object_name, material_name, color) do
-      {:ok, result} ->
-        {:ok, %{content: [text("Result: #{result}")]}, state}
-
-      {:error, reason} ->
-        {:error, "Failed to set material: #{reason}", state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("bpy_render_image", %{"filepath" => filepath} = args, state) do
-    resolution_x = Map.get(args, "resolution_x", 1920)
-    resolution_y = Map.get(args, "resolution_y", 1080)
-
-    case BpyMcp.BpyTools.render_image(filepath, resolution_x, resolution_y) do
-      {:ok, result} ->
-        {:ok, %{content: [text("Result: #{result}")]}, state}
-
-      {:error, reason} ->
-        {:error, "Failed to render image: #{reason}", state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("bpy_get_scene_info", _args, state) do
+  def handle_get_scene_info(_args, state) do
     case BpyMcp.BpyTools.get_scene_info() do
       {:ok, info} ->
         {:ok, %{content: [text("Scene info: #{inspect(info)}")]}, state}
-
       {:error, reason} ->
         {:error, "Failed to get scene info: #{reason}", state}
+    end
+  end
+
+  def handle_take_photo(args, state) do
+    filepath = Map.get(args, "filepath", "photo.png")
+    camera_location = Map.get(args, "camera_location", [7.0, -7.0, 5.0])
+    camera_rotation = Map.get(args, "camera_rotation", [60.0, 0.0, 45.0])
+    focal_length = Map.get(args, "focal_length", 50.0)
+    resolution_x = Map.get(args, "resolution_x", 1920)
+    resolution_y = Map.get(args, "resolution_y", 1080)
+    case BpyMcp.BpyTools.take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y) do
+      {:ok, result} ->
+        {:ok, %{content: [text("Result: #{result}")]}, state}
+      {:error, reason} ->
+        {:error, "Failed to take photo: #{reason}", state}
     end
   end
 
@@ -241,4 +201,20 @@ defmodule BpyMcp.NativeService do
   def handle_tool_call(tool_name, _args, state) do
     {:error, "Tool not found: #{tool_name}", state}
   end
+
+  # Helper function to parse PID from string
+  defp parse_pid(pid_str) when is_binary(pid_str) do
+    try do
+      # For now, we'll use a simple approach - in production,
+      # you'd want more robust PID serialization/deserialization
+      case pid_str do
+        "<0." <> _rest -> {:ok, :erlang.list_to_pid(String.to_charlist(pid_str))}
+        _ -> {:error, :invalid_pid}
+      end
+    rescue
+      _ -> {:error, :invalid_pid}
+    end
+  end
+
+  defp parse_pid(_), do: {:error, :invalid_pid}
 end
