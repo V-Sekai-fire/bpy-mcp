@@ -129,6 +129,10 @@ end
     if not bpy.context.scene:
         bpy.ops.scene.new(type='NEW')
 
+    # Ensure we're in OBJECT mode
+    if bpy.context.active_object and bpy.context.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+
     # Create sphere
     bpy.ops.mesh.primitive_uv_sphere_add(radius=#{radius}, location=(#{location_str}))
 
@@ -140,8 +144,8 @@ end
             result = f"Created sphere '{sphere.name}' at {list(sphere.location)} with radius #{radius}"
         else:
             result = f"Failed to create sphere - no active object after creation"
-    except AttributeError:
-        result = f"Failed to create sphere - context error accessing active object"
+    except AttributeError as e:
+        result = f"Failed to create sphere - context error accessing active object: {str(e)}"
     result
     """
 

@@ -34,6 +34,8 @@ defmodule BpyMcp.MixProject do
       {:jason, "~> 1.4"},
       {:pythonx, "~> 0.4.0", runtime: false},
       {:briefly, "~> 0.5.1"},
+      {:plug, "~> 1.16"},
+      {:plug_cowboy, "~> 2.7"},
       {:dialyxir, "~> 1.4.6", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

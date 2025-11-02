@@ -60,12 +60,15 @@ defmodule BpyMcp.Application do
       {BpyMcp.NativeService, [name: BpyMcp.NativeService]}
     ]
 
-    # Only start stdio server in production, not in tests
+    # Start HTTP server instead of stdio server
     children =
       if Mix.env() == :test do
         children
       else
-        children ++ [{BpyMcp.StdioServer, []}]
+        port = System.get_env("PORT", "4000") |> String.to_integer()
+        children ++ [
+          {Plug.Cowboy, scheme: :http, plug: BpyMcp.HTTPServer, options: [port: port]}
+        ]
       end
 
     opts = [strategy: :one_for_one, name: BpyMcp.Supervisor]
