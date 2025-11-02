@@ -637,27 +637,17 @@ result
       :mock
     else
       # Test if both Pythonx works and bpy is available
-      # Suppress stderr during Blender import to prevent EGL errors from corrupting stdio
+      # Redirect stderr to prevent EGL errors from corrupting stdio
       try do
         code = """
-        import sys
-        import os
-        from contextlib import redirect_stderr
-        import io
-
-        # Suppress stderr during Blender import to prevent EGL errors
-        stderr_capture = io.StringIO()
-        try:
-          with redirect_stderr(stderr_capture):
-            import bpy
-            result = bpy.context.scene is not None
-        except Exception as e:
-          result = False
-
+        import bpy
+        result = bpy.context.scene is not None
         result
         """
 
-        case Pythonx.eval(code, %{}) do
+        # Use /dev/null to suppress Blender's output from corrupting stdio
+        null_device = File.open!("/dev/null", [:write])
+        case Pythonx.eval(code, %{}, stdout_device: null_device, stderr_device: null_device) do
           {result, _globals} ->
             case Pythonx.decode(result) do
               true -> :ok
