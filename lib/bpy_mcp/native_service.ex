@@ -117,13 +117,27 @@ defmodule BpyMcp.NativeService do
 
   @impl true
   def handle_tool_call("bpy_execute_command", %{"commands" => commands} = _args, state) do
+    # Reset scene for fresh command list execution
+    case BpyMcp.BpyTools.reset_scene() do
+      {:ok, _reset_msg} ->
+        # Execute commands individually but return only the last result
+        execute_commands_individually(commands, state)
+
+      {:error, reset_reason} ->
+        {:error, "Failed to reset scene: #{reset_reason}", state}
+    end
+  end
+
+  # Execute commands individually but return only the last result
+  defp execute_commands_individually(commands, state) do
     results = Enum.map(commands, fn %{"command" => command_name} = command_spec ->
+      command_args = Map.get(command_spec, "args", %{})
+
       case Map.get(@commands, command_name) do
         nil ->
           {:error, "Unknown command: #{command_name}"}
 
         %{handler: handler} ->
-          command_args = Map.get(command_spec, "args", %{})
           case apply(__MODULE__, handler, [command_args, state]) do
             {:ok, response, _new_state} -> {:ok, command_name, response}
             {:error, reason, _new_state} -> {:error, command_name, reason}
@@ -131,18 +145,14 @@ defmodule BpyMcp.NativeService do
       end
     end)
 
-    # Check if any commands failed
-    errors = Enum.filter(results, fn {status, _, _} -> status == :error end)
-
-    if Enum.empty?(errors) do
-      success_messages = Enum.map(results, fn {:ok, cmd, resp} ->
-        content_text = resp.content |> hd() |> Map.get("text")
-        "#{cmd}: #{content_text}"
-      end)
-      {:ok, %{content: [text("All commands executed successfully:\n#{Enum.join(success_messages, "\n")}")]}, state}
-    else
-      error_messages = Enum.map(errors, fn {:error, cmd, reason} -> "#{cmd}: #{reason}" end)
-      {:error, "Some commands failed:\n#{Enum.join(error_messages, "\n")}", state}
+    # Return only the last command's result
+    case List.last(results) do
+      {:ok, last_cmd, response} ->
+        {:ok, response, state}
+      {:error, last_cmd, reason} ->
+        {:error, "Command '#{last_cmd}' failed: #{reason}", state}
+      nil ->
+        {:error, "No commands executed", state}
     end
   end
 

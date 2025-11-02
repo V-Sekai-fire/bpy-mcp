@@ -59,12 +59,17 @@ defmodule BpyMcp.BpyTools do
 
     # Create cube
     bpy.ops.mesh.primitive_cube_add(size=#{size}, location=(#{location_str}))
-    cube = bpy.context.active_object
-    if cube:
-        cube.name = '#{name}'
-        result = f"Created cube '{cube.name}' at {list(cube.location)} with size #{size}"
-    else:
-        result = f"Failed to create cube - no active object after creation"
+
+    # Safely get the active object
+    try:
+        cube = bpy.context.active_object
+        if cube:
+            cube.name = '#{name}'
+            result = f"Created cube '{cube.name}' at {list(cube.location)} with size #{size}"
+        else:
+            result = f"Failed to create cube - no active object after creation"
+    except AttributeError:
+        result = f"Failed to create cube - context error accessing active object"
     result
     """
 
@@ -126,12 +131,17 @@ defmodule BpyMcp.BpyTools do
 
     # Create sphere
     bpy.ops.mesh.primitive_uv_sphere_add(radius=#{radius}, location=(#{location_str}))
-    sphere = bpy.context.active_object
-    if sphere:
-        sphere.name = '#{name}'
-        result = f"Created sphere '{sphere.name}' at {list(sphere.location)} with radius #{radius}"
-    else:
-        result = f"Failed to create sphere - no active object after creation"
+
+    # Safely get the active object
+    try:
+        sphere = bpy.context.active_object
+        if sphere:
+            sphere.name = '#{name}'
+            result = f"Created sphere '{sphere.name}' at {list(sphere.location)} with radius #{radius}"
+        else:
+            result = f"Failed to create sphere - no active object after creation"
+    except AttributeError:
+        result = f"Failed to create sphere - context error accessing active object"
     result
     """
 
@@ -369,6 +379,60 @@ defmodule BpyMcp.BpyTools do
   end
 
   @doc """
+  Resets the Blender scene to a clean state by removing all objects.
+
+  ## Returns
+    - `{:ok, String.t()}` - Success message
+    - `{:error, String.t()}` - Error message
+  """
+  @spec reset_scene() :: bpy_result()
+  def reset_scene do
+    case ensure_pythonx() do
+      :ok ->
+        do_reset_scene()
+
+      :mock ->
+        mock_reset_scene()
+    end
+  end
+
+  defp mock_reset_scene do
+    {:ok, "Mock reset scene - cleared all objects"}
+  end
+
+  defp do_reset_scene do
+    code = """
+import bpy
+
+# Create a new scene to ensure clean state
+bpy.ops.scene.new(type='NEW')
+scene = bpy.context.scene
+scene.name = 'Scene'
+
+# Set basic scene properties
+scene.render.fps = 30
+scene.render.fps_base = 1
+
+result = "Scene reset - fresh scene created"
+result
+"""
+
+    case Pythonx.eval(code, %{}) do
+      {result, _globals} ->
+        case Pythonx.decode(result) do
+          result when is_binary(result) -> {:ok, result}
+          _ -> {:error, "Failed to decode reset_scene result"}
+        end
+
+      error ->
+        {:error, inspect(error)}
+    end
+  rescue
+    e ->
+      {:error, Exception.message(e)}
+  end
+
+  @doc """
   Gets information about the current Blender scene.
 
   ## Returns
@@ -406,10 +470,19 @@ defmodule BpyMcp.BpyTools do
     code = """
     import bpy
 
+    # Ensure we have a valid scene and context
+    if not bpy.context.scene:
+        bpy.ops.scene.new(type='NEW')
+
     scene = bpy.context.scene
     objects = [obj.name for obj in scene.objects]
-    active_object = bpy.context.active_object
-    active_object_name = active_object.name if active_object else None
+
+    # Safely get active object
+    try:
+        active_object = bpy.context.active_object
+        active_object_name = active_object.name if active_object else None
+    except AttributeError:
+        active_object_name = None
 
     result = {
         "scene_name": scene.name,
@@ -522,4 +595,6 @@ defmodule BpyMcp.BpyTools do
   def test_mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y), do: mock_take_photo(filepath, camera_location, camera_rotation, focal_length, resolution_x, resolution_y)
   @doc false
   def test_mock_get_scene_info(), do: mock_get_scene_info()
+  @doc false
+  def test_mock_reset_scene(), do: mock_reset_scene()
 end
