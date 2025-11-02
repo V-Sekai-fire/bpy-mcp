@@ -12,7 +12,10 @@ defmodule BpyMcp.BMesh do
   @spec ensure_pythonx() :: :ok | :mock
   def ensure_pythonx do
     # Force mock mode during testing to avoid Blender initialization
-    if Application.get_env(:bpy_mcp, :force_mock, false) or System.get_env("MIX_ENV") == "test" do
+    # unless explicitly disabled
+    force_mock = Application.get_env(:bpy_mcp, :force_mock, false) or 
+                 (System.get_env("MIX_ENV") == "test" and System.get_env("BYP_MCP_USE_NATIVE") != "true")
+    if force_mock do
       :mock
     else
       case Application.ensure_all_started(:pythonx) do
