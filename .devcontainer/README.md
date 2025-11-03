@@ -25,8 +25,32 @@ Once the container is running, you can:
 
 - Run `mix test` to run tests
 - Run `mix compile` to compile the project
-- Run `mix run -e BpyMcp.StdioServer.start_link([])` to start the MCP server
+- **Run `mix mcp.server` to start the MCP HTTP server on port 4000**
+- Run `mix run -e BpyMcp.StdioServer.start_link([])` to start the MCP server in stdio mode
 - Use the integrated terminal for any development tasks
+
+## Testing the MCP Server
+
+The MCP server can be run in two modes:
+
+### HTTP Mode (Recommended for testing)
+
+```bash
+mix mcp.server
+```
+
+This starts an HTTP server on port 4000 with endpoints:
+
+- `http://localhost:4000/mcp` - MCP protocol endpoint
+- `http://localhost:4000/health` - Health check
+
+### Stdio Mode
+
+```bash
+mix run -e BpyMcp.StdioServer.start_link([])
+```
+
+This runs the server using standard input/output for MCP client communication.
 
 ## Git Tools
 

@@ -3,8 +3,9 @@ version: '3.8'
 services:
   bpy-mcp:
     build:
-      context: ..
+      context: .
       dockerfile: .devcontainer/Dockerfile
+    image: bpy-mcp:latest
     platform: linux/amd64
     container_name: bpy-mcp-server
     environment:
@@ -13,8 +14,8 @@ services:
       - PORT=4000
       - ELIXIR_ERL_OPTIONS=+fnu
     volumes:
-      # Mount source code (relative to project root)
-      - ../:/workspace:cached
+      # Mount source code
+      - .:/workspace:cached
       # Mount temporary directory for Blender operations
       - bpy_temp:/tmp
     working_dir: /workspace
@@ -24,6 +25,13 @@ services:
     stdin_open: true
     tty: true
     restart: unless-stopped
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
 
 volumes:
   bpy_temp:
+

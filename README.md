@@ -118,6 +118,7 @@ This project includes a dev container configuration for a consistent development
 4. The container will automatically set up the complete development environment
 
 The dev container includes:
+
 - Elixir 1.17.3 with OTP 26
 - Pre-installed dependencies and Hex package manager
 - VS Code extensions for Elixir development
@@ -136,10 +137,105 @@ docker run --rm -it --platform linux/amd64 -v $(pwd):/workspace -w /workspace bp
 ```
 
 Inside the container:
+
 ```bash
 mix deps.get
 mix compile
-mix run -e BpyMcp.StdioServer.start_link([])
+
+# Start HTTP server (recommended for testing)
+mix mcp.server
+
+# Or start with SSE transport
+mix mcp.server --transport sse
+
+# Or start stdio server (for MCP clients using stdio)
+mix mcp.stdio
+```
+
+The HTTP server will be available at:
+
+- MCP endpoint: `http://localhost:4000` (POST requests)
+- SSE endpoint: `http://localhost:4000/sse` (if SSE enabled)
+- Health check: `http://localhost:4000/.well-known/health` (via ex_mcp)
+
+## Connecting with MCP Clients
+
+### AI Agent Setup (VS Code & Cursor)
+
+**Setup Guide**: See [AGENTS.md](./AGENTS.md) for detailed instructions on configuring VS Code and Cursor to use this MCP server.
+
+**Quick Start:**
+1. Open your editor → Command Palette (`Shift + Cmd/Ctrl + P`) → "Open MCP Settings"
+2. Add to `mcp.json`:
+```json
+{
+  "mcpServers": {
+    "bpy-mcp": {
+      "command": "mix",
+      "args": ["mcp.stdio"],
+      "cwd": "/path/to/bpy-mcp"
+    }
+  }
+}
+```
+3. Save and restart your editor
+
+See [AGENTS.md](./AGENTS.md) for detailed setup instructions.
+
+### HTTP Transport
+
+To connect with an MCP client using HTTP transport, configure the client with:
+
+- **Server URL**: `http://localhost:4000`
+- **Protocol**: MCP JSON-RPC 2.0
+
+Example client configuration (for Claude Desktop or other MCP clients):
+
+```json
+{
+  "mcpServers": {
+    "bpy-mcp": {
+      "command": "mix",
+      "args": ["mcp.server", "--transport", "http"],
+      "env": {
+        "PORT": "4000"
+      }
+    }
+  }
+}
+```
+
+### Stdio Transport
+
+For stdio-based clients:
+
+```json
+{
+  "mcpServers": {
+    "bpy-mcp": {
+      "command": "mix",
+      "args": ["mcp.stdio"]
+    }
+  }
+}
+```
+
+### SSE Transport
+
+For clients that support Server-Sent Events:
+
+```json
+{
+  "mcpServers": {
+    "bpy-mcp": {
+      "command": "mix",
+      "args": ["mcp.server", "--transport", "sse"],
+      "env": {
+        "PORT": "4000"
+      }
+    }
+  }
+}
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)

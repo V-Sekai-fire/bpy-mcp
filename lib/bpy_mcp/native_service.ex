@@ -89,6 +89,75 @@ defmodule BpyMcp.NativeService do
     }
   }
 
+  # Override handle_request to intercept tools/list and convert input_schema to inputSchema
+  # This ensures tools returned have camelCase keys as required by MCP specification
+  @impl true
+  def handle_request(%{"method" => "tools/list"} = request, params, state) do
+    # Handle tools/list specially to convert input_schema to inputSchema
+    # Call parent first to get the standard response
+    case super(request, params, state) do
+      {:reply, response, new_state} ->
+        # Convert input_schema to inputSchema in the response
+        converted_response = convert_response_keys(response)
+        {:reply, converted_response, new_state}
+      
+      other ->
+        other
+    end
+  end
+  
+  # Convert input_schema to inputSchema in tools/list response
+  defp convert_response_keys(%{"jsonrpc" => "2.0", "result" => %{"tools" => tools}} = response) do
+    converted_tools = 
+      tools
+      |> Enum.map(fn tool -> 
+          # Handle both map formats (with string or atom keys)
+          tool
+          |> convert_map_keys()
+          |> convert_keys_to_camel_case()
+        end)
+    Map.put(response, "result", %{"tools" => converted_tools})
+  end
+  
+  defp convert_response_keys(response), do: response
+  
+  # Convert all atom keys to string keys first for consistent processing
+  defp convert_map_keys(map) when is_map(map) do
+    Enum.into(map, %{}, fn
+      {key, value} when is_atom(key) -> {Atom.to_string(key), value}
+      {key, value} -> {key, value}
+    end)
+  end
+  
+  defp convert_map_keys(value), do: value
+  
+  # Helper to get attribute map (from ExMCP.Server)
+  defp get_attribute_map(attr_name) do
+    Module.get_attribute(__MODULE__, attr_name) || %{}
+  end
+
+  # Convert snake_case keys to camelCase for MCP spec
+  defp convert_keys_to_camel_case(map) when is_map(map) do
+    Enum.into(map, %{}, fn
+      {:input_schema, value} -> {"inputSchema", convert_keys_to_camel_case(value)}
+      {"input_schema", value} -> {"inputSchema", convert_keys_to_camel_case(value)}
+      {:inputSchema, value} -> {"inputSchema", convert_keys_to_camel_case(value)}  # Already correct
+      {"inputSchema", value} -> {"inputSchema", convert_keys_to_camel_case(value)}  # Already correct
+      {:output_schema, value} -> {"outputSchema", convert_keys_to_camel_case(value)}
+      {"output_schema", value} -> {"outputSchema", convert_keys_to_camel_case(value)}
+      {:outputSchema, value} -> {"outputSchema", convert_keys_to_camel_case(value)}  # Already correct
+      {"outputSchema", value} -> {"outputSchema", convert_keys_to_camel_case(value)}  # Already correct
+      {key, value} when is_atom(key) -> {Atom.to_string(key), convert_keys_to_camel_case(value)}
+      {key, value} -> {key, convert_keys_to_camel_case(value)}
+    end)
+  end
+
+  defp convert_keys_to_camel_case(list) when is_list(list) do
+    Enum.map(list, &convert_keys_to_camel_case/1)
+  end
+
+  defp convert_keys_to_camel_case(value), do: value
+
   # Command-based tools
 
   deftool "bpy_list_commands" do
@@ -237,7 +306,6 @@ defmodule BpyMcp.NativeService do
     case BpyMcp.BpyTools.create_sphere(name, location, radius, temp_dir) do
       {:ok, result} ->
         {:ok, %{content: [text("Result: #{result}")]}, state}
-
       {:error, reason} ->
         {:error, "Failed to create sphere: #{reason}", state}
     end

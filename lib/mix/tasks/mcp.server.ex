@@ -26,20 +26,39 @@ defmodule Mix.Tasks.Mcp.Server do
   @impl Mix.Task
   def run(args) do
     # Parse command line arguments
-    {opts, _} = OptionParser.parse!(args, strict: [port: :integer])
+    {opts, _} = OptionParser.parse!(args, strict: [port: :integer, transport: :string])
 
-    # Set port from command line or environment
+    # Determine transport type
+    transport = 
+      case Keyword.get(opts, :transport) || System.get_env("MCP_TRANSPORT", "http") do
+        "stdio" -> :stdio
+        "sse" -> :sse
+        _ -> :http
+      end
+
+    # Set port from command line or environment (only for HTTP/SSE)
     port = opts[:port] || System.get_env("PORT", "4000") |> String.to_integer()
     System.put_env("PORT", to_string(port))
+    System.put_env("MCP_TRANSPORT", to_string(transport))
 
     Mix.Task.run("app.start")
 
     # Start the MCP application
     Application.ensure_all_started(:bpy_mcp)
 
-    IO.puts("🚀 bpy-mcp HTTP server started on port #{port}")
-    IO.puts("📡 MCP endpoint: http://localhost:#{port}/mcp")
-    IO.puts("💚 Health check: http://localhost:#{port}/health")
+    case transport do
+      :stdio ->
+        IO.puts(:stderr, "🚀 bpy-mcp stdio server started")
+        IO.puts(:stderr, "📡 Ready to accept MCP protocol messages via stdin/stdout")
+
+      _ ->
+        IO.puts("🚀 bpy-mcp #{transport} server started on port #{port}")
+        IO.puts("📡 MCP endpoint: http://localhost:#{port}")
+        if transport == :sse do
+          IO.puts("📡 SSE endpoint: http://localhost:#{port}/sse")
+        end
+        IO.puts("💚 Health check: http://localhost:#{port}/health")
+    end
 
     # Keep the process running
     Process.sleep(:infinity)

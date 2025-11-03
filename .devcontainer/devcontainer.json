@@ -25,7 +25,7 @@
       }
     }
   },
-  "forwardPorts": [],
+  "forwardPorts": [4000],
   "postCreateCommand": "mix deps.get && mix compile",
   "remoteUser": "bpyuser",
   "mounts": [

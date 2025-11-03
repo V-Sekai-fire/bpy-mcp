@@ -49,25 +49,49 @@ defmodule BpyMcp.Application do
     Application.ensure_all_started(:pythonx)
     Application.ensure_all_started(:briefly)
 
+    # Determine transport type from environment or default to HTTP
+    transport_type = 
+      case System.get_env("MCP_TRANSPORT", "http") do
+        "stdio" -> :stdio
+        "http" -> :http
+        "sse" -> :sse
+        _ -> :http
+      end
+
     children = [
       # Registry for scene managers
       {Registry, keys: :unique, name: BpyMcp.SceneRegistry},
 
       # Dynamic supervisor for scene manager processes
-      {DynamicSupervisor, name: BpyMcp.SceneSupervisor, strategy: :one_for_one},
-
-      # Original MCP services
-      {BpyMcp.NativeService, [name: BpyMcp.NativeService]}
+      {DynamicSupervisor, name: BpyMcp.SceneSupervisor, strategy: :one_for_one}
     ]
 
-    # Start HTTP server instead of stdio server
+    # Start MCP server with appropriate transport
     children =
-      if Mix.env() == :test or System.get_env("MCP_STDIO") == "true" do
-        children
+      if Mix.env() == :test do
+        # In test, start with native transport
+        children ++ [
+          {BpyMcp.NativeService, [transport: :native, name: BpyMcp.NativeService]}
+        ]
       else
         port = System.get_env("PORT", "4000") |> String.to_integer()
+        # Enable SSE for HTTP transport to support Cursor's streamableHttp
+        server_opts = [
+          transport: transport_type,
+          port: port,
+          name: BpyMcp.NativeService
+        ]
+        
+        # Enable SSE when using HTTP transport
+        server_opts =
+          if transport_type == :http do
+            Keyword.put(server_opts, :sse_enabled, true)
+          else
+            server_opts
+          end
+        
         children ++ [
-          {Plug.Cowboy, scheme: :http, plug: BpyMcp.HTTPServer, options: [port: port]}
+          {BpyMcp.NativeService, server_opts}
         ]
       end
 
