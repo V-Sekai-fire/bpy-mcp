@@ -20,7 +20,7 @@ services:
     working_dir: /workspace
     ports:
       - "4000:4000"
-    command: ["sh", "-c", "mix deps.get && mix compile && mix mcp.server --transport http --port 4000"]
+    command: ["sh", "-c", "cd /workspace && mix deps.get && mix compile && mix mcp.server --transport http --port 4000"]
     stdin_open: true
     tty: true
     restart: unless-stopped
