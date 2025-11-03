@@ -447,10 +447,8 @@ rescue
 end
 
 # Helper functions
-@doc """
-Ensures the Blender scene is set to 30 FPS for animations.
-Only executes when Pythonx/Blender is available and not in test mode.
-"""
+# Ensures the Blender scene is set to 30 FPS for animations.
+# Only executes when Pythonx/Blender is available and not in test mode.
 @spec ensure_scene_fps() :: :ok
 defp ensure_scene_fps do
   # In test mode, never execute Python code

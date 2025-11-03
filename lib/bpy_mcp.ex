@@ -192,7 +192,7 @@ defmodule BpyMcp do
   end
 
   # Private helper to get operation count from scene manager
-  defp get_operation_count(pid) do
+  defp get_operation_count(_pid) do
     try do
       # This is a simplified version - in a real implementation,
       # we'd query the GenServer state directly

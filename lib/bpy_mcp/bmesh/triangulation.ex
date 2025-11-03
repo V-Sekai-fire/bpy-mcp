@@ -158,7 +158,7 @@ defmodule BpyMcp.BMesh.Triangulation do
     # Simple ear clipping: connect first vertex to each pair of consecutive vertices
     # This follows BMesh triangulation pattern
     [first | rest] = vertices
-    triangles = []
+    _triangles = []
 
     # Create triangles by connecting first vertex to each edge
     triangles = for i <- 0..(length(rest) - 2) do

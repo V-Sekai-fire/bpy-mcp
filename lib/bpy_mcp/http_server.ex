@@ -204,80 +204,83 @@ defmodule BpyMcp.HTTPServer do
   end
 
   # Parse tools from the content returned by bpy_list_commands
-  defp parse_tools_from_content(content) do
-    # The content is a list with one text element containing the tools in Elixir map syntax
-    case content do
-      [%{"type" => "text", "text" => text}] ->
-        # Extract the commands from the text
-        # The text format is: "Available commands: [map1, map2, ...]"
-        case extract_commands_from_text(text) do
-          commands when is_list(commands) ->
-            Enum.map(commands, fn command ->
-              %{
-                name: command["name"],
-                description: command["description"],
-                inputSchema: command["schema"]
-              }
-            end)
-
-          _ ->
-            []
-        end
-
-      _ ->
-        []
-    end
-  end
+  # Unused - keeping for potential future use
+  # defp parse_tools_from_content(content) do
+  #   # The content is a list with one text element containing the tools in Elixir map syntax
+  #   case content do
+  #     [%{"type" => "text", "text" => text}] ->
+  #       # Extract the commands from the text
+  #       # The text format is: "Available commands: [map1, map2, ...]"
+  #       case extract_commands_from_text(text) do
+  #         commands when is_list(commands) ->
+  #           Enum.map(commands, fn command ->
+  #             %{
+  #               name: command["name"],
+  #               description: command["description"],
+  #               inputSchema: command["schema"]
+  #             }
+  #           end)
+  #
+  #         _ ->
+  #           []
+  #       end
+  #
+  #     _ ->
+  #       []
+  #   end
+  # end
 
   # Extract commands from the text format
-  defp extract_commands_from_text(text) do
-    # Simple parsing of the Elixir map syntax
-    # This is a basic implementation - in production you'd want proper Elixir AST parsing
-    try do
-      # Remove the "Available commands: " prefix
-      commands_str = String.replace(text, "Available commands: ", "")
-
-      # Parse the Elixir map syntax (simplified)
-      # This is a very basic parser that works for our specific format
-      parse_elixir_maps(commands_str)
-    rescue
-      _ -> []
-    end
-  end
+  # Unused - keeping for potential future use
+  # defp extract_commands_from_text(text) do
+  #   # Simple parsing of the Elixir map syntax
+  #   # This is a basic implementation - in production you'd want proper Elixir AST parsing
+  #   try do
+  #     # Remove the "Available commands: " prefix
+  #     commands_str = String.replace(text, "Available commands: ", "")
+  #
+  #     # Parse the Elixir map syntax (simplified)
+  #     # This is a very basic parser that works for our specific format
+  #     parse_elixir_maps(commands_str)
+  #   rescue
+  #     _ -> []
+  #   end
+  # end
 
   # Very basic parser for our specific Elixir map format
-  defp parse_elixir_maps(str) do
-    # This is a simplified parser that extracts the key information
-    # In production, you'd want to use Code.eval_string or proper AST parsing
-
-    # Extract command entries
-    commands = []
-
-    # Find all %{...} blocks
-    Regex.scan(~r/%\{[^}]+\}/, str)
-    |> Enum.each(fn [map_str] ->
-      # Extract name
-      name_match = Regex.run(~r/name:\s*"([^"]+)"/, map_str)
-      name = if name_match, do: Enum.at(name_match, 1), else: nil
-
-      # Extract description
-      desc_match = Regex.run(~r/description:\s*"([^"]+)"/, map_str)
-      description = if desc_match, do: Enum.at(desc_match, 1), else: nil
-
-      # For schema, we'll create a simplified version
-      # In a real implementation, you'd parse the full schema
-      schema = %{
-        "type" => "object",
-        "properties" => %{}
-      }
-
-      if name && description do
-        commands = [%{"name" => name, "description" => description, "schema" => schema} | commands]
-      end
-    end)
-
-    Enum.reverse(commands)
-  end
+  # Unused - keeping for potential future use
+  # defp parse_elixir_maps(str) do
+  #   # This is a simplified parser that extracts the key information
+  #   # In production, you'd want to use Code.eval_string or proper AST parsing
+  #
+  #   # Extract command entries
+  #   commands = []
+  #
+  #   # Find all %{...} blocks
+  #   Regex.scan(~r/%\{[^}]+\}/, str)
+  #   |> Enum.each(fn [map_str] ->
+  #     # Extract name
+  #     name_match = Regex.run(~r/name:\s*"([^"]+)"/, map_str)
+  #     name = if name_match, do: Enum.at(name_match, 1), else: nil
+  #
+  #     # Extract description
+  #     desc_match = Regex.run(~r/description:\s*"([^"]+)"/, map_str)
+  #     description = if desc_match, do: Enum.at(desc_match, 1), else: nil
+  #
+  #     # For schema, we'll create a simplified version
+  #     # In a real implementation, you'd parse the full schema
+  #     schema = %{
+  #       "type" => "object",
+  #       "properties" => %{}
+  #     }
+  #
+  #     if name && description do
+  #       commands = [%{"name" => name, "description" => description, "schema" => schema} | commands]
+  #     end
+  #   end)
+  #
+  #   Enum.reverse(commands)
+  # end
 
   # Send MCP error response
   defp send_mcp_error(conn, code, message) do

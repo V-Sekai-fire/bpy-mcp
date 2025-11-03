@@ -544,9 +544,9 @@ defmodule BpyMcp.BMesh.Mock do
       {:ok, gltf_data} ->
         # Extract mesh data from glTF
         meshes = gltf_data["meshes"] || []
-        accessors = gltf_data["accessors"] || []
-        bufferViews = gltf_data["bufferViews"] || []
-        buffers = gltf_data["buffers"] || []
+        _accessors = gltf_data["accessors"] || []
+        _bufferViews = gltf_data["bufferViews"] || []
+        _buffers = gltf_data["buffers"] || []
         imported_meshes = []
 
         imported_meshes = Enum.reduce(meshes, imported_meshes, fn mesh, acc ->

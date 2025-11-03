@@ -74,15 +74,20 @@ defmodule BpyMcp.Application do
           {BpyMcp.NativeService, [transport: :native, name: BpyMcp.NativeService]}
         ]
       else
-        port = System.get_env("PORT", "4000") |> String.to_integer()
-        # Enable SSE for HTTP transport to support Cursor's streamableHttp
-        # Use use_sse: true as shown in ex_mcp examples (03_http_sse_server.exs)
+        # For stdio transport, no port needed
         server_opts = [
           transport: transport_type,
-          port: port,
-          name: BpyMcp.NativeService,
-          use_sse: transport_type == :http
+          name: BpyMcp.NativeService
         ]
+        
+        # Add port only for HTTP transport
+        server_opts =
+          if transport_type == :http do
+            port = System.get_env("PORT", "4000") |> String.to_integer()
+            Keyword.put(server_opts, :port, port)
+          else
+            server_opts
+          end
         
         children ++ [
           {BpyMcp.NativeService, server_opts}

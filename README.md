@@ -145,18 +145,16 @@ mix compile
 # Start HTTP server (recommended for testing)
 mix mcp.server
 
-# Or start with SSE transport
-mix mcp.server --transport sse
-
-# Or start stdio server (for MCP clients using stdio)
+# Or start with stdio transport (recommended for IDEs)
 mix mcp.stdio
 ```
 
 The HTTP server will be available at:
 
 - MCP endpoint: `http://localhost:4000` (POST requests)
-- SSE endpoint: `http://localhost:4000/sse` (if SSE enabled)
 - Health check: `http://localhost:4000/.well-known/health` (via ex_mcp)
+
+**Note:** For IDE integration (VS Code/Cursor), stdio transport (`mix mcp.stdio`) is recommended.
 
 ## Connecting with MCP Clients
 
@@ -220,23 +218,6 @@ For stdio-based clients:
 }
 ```
 
-### SSE Transport
-
-For clients that support Server-Sent Events:
-
-```json
-{
-  "mcpServers": {
-    "bpy-mcp": {
-      "command": "mix",
-      "args": ["mcp.server", "--transport", "sse"],
-      "env": {
-        "PORT": "4000"
-      }
-    }
-  }
-}
-```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can

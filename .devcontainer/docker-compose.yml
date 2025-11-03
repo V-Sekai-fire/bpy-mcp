@@ -20,7 +20,8 @@ services:
     working_dir: /workspace
     ports:
       - "4000:4000"
-    command: ["sh", "-c", "cd /workspace && mix deps.get && mix compile && mix mcp.server --transport http --port 4000"]
+    entrypoint: ["sh", "-c"]
+    command: ["set -e && cd /workspace && echo 'Current directory:' && pwd && echo 'Checking mix.exs:' && ls -la mix.exs && echo 'Running mix deps.get...' && mix deps.get && echo 'Running mix compile...' && mix compile && echo 'Starting MCP server...' && mix mcp.server --transport http --port 4000"]
     stdin_open: true
     tty: true
     restart: unless-stopped

@@ -114,7 +114,7 @@ defmodule BpyMcp.BMesh.Topology do
   """
   @spec build_triangulated_topology(map(), list()) :: map()
   def build_triangulated_topology(mesh_data, triangles) do
-    vertices = mesh_data["vertices"]
+    _vertices = mesh_data["vertices"]
     edges = mesh_data["edges"]
 
     # Build face connectivity for edges as a list indexed by edge position
@@ -229,7 +229,7 @@ defmodule BpyMcp.BMesh.Topology do
         new_lnext = lnext ++ Enum.map(face_loops, & &1.next)
         new_lprev = lprev ++ Enum.map(face_loops, & &1.prev)
 
-        loop_index = loop_index + face_loop_count
+        _loop_index = loop_index + face_loop_count
 
         {new_lverts, new_ledges, new_lfaces, new_lnext, new_lprev}
       end)
@@ -248,7 +248,7 @@ defmodule BpyMcp.BMesh.Topology do
   Helper function to find edge index.
   """
   @spec find_edge_index(list(), integer(), integer()) :: integer()
-  def find_edge_index(triangles, v1, v2) do
+  def find_edge_index(_triangles, v1, v2) do
     # This is a simplified implementation - in practice you'd build a proper edge lookup
     edge_key = Enum.sort([v1, v2])
     # Return a dummy edge index for now

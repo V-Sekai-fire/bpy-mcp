@@ -120,7 +120,9 @@ defmodule BpyMcp.SceneManager do
 
   @impl true
   def handle_call(:get_scene_info, _from, state) do
-    result = BpyMcp.BpyTools.get_scene_info()
+    # Use temp_dir from state or a default
+    temp_dir = Map.get(state, :temp_dir, System.tmp_dir!())
+    result = BpyMcp.BpyTools.get_scene_info(temp_dir)
     new_state = update_state(state, :get_scene_info, result)
     {:reply, result, new_state}
   end

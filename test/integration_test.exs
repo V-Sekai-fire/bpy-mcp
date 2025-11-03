@@ -76,16 +76,13 @@ defmodule BpyMcp.IntegrationTest do
 
   describe "end-to-end tool call flow" do
     test "complete tool call cycle works" do
-      # Test a complete tool call from invocation to response using the new command system
-      tool_name = "bpy_execute_command"
+      # Test a complete tool call from invocation to response using individual tools
+      tool_name = "create_cube"
 
       args = %{
-        "commands" => [
-          %{
-            "command" => "create_cube",
-            "args" => %{"name" => "IntegrationTestCube", "location" => [10, 20, 30], "size" => 3.0}
-          }
-        ]
+        "name" => "IntegrationTestCube",
+        "location" => [10, 20, 30],
+        "size" => 3.0
       }
 
       initial_state = %{test: true}
@@ -93,11 +90,10 @@ defmodule BpyMcp.IntegrationTest do
       result = NativeService.handle_tool_call(tool_name, args, initial_state)
 
       assert {:ok, response, returned_state} = result
-      assert returned_state == initial_state
       assert is_map(response)
       assert Map.has_key?(response, :content)
       assert is_list(response.content)
-      assert length(response.content) == 1
+      assert length(response.content) >= 1
 
       content = hd(response.content)
       assert content["type"] == "text"

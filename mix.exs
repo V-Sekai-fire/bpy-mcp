@@ -23,7 +23,7 @@ defmodule BpyMcp.MixProject do
   def application do
     [
       mod: {BpyMcp.Application, []},
-      applications: [:logger, :ex_mcp, :pythonx, :briefly]
+      applications: [:logger, :ex_mcp, :pythonx, :briefly, :macfly]
     ]
   end
 
@@ -34,6 +34,7 @@ defmodule BpyMcp.MixProject do
       {:jason, "~> 1.4"},
       {:pythonx, "~> 0.4.0", runtime: false},
       {:briefly, "~> 0.5.1"},
+      {:macfly, "~> 0.2.20"},
       {:plug, "~> 1.16"},
       {:plug_cowboy, "~> 2.7"},
       {:dialyxir, "~> 1.4.6", only: [:dev], runtime: false},
