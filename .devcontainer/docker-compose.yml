@@ -16,7 +16,7 @@ services:
       # Mount temporary directory for Blender operations
       - bpy_temp:/tmp
     working_dir: /workspace
-    command: ["mix", "run", "-e", "BpyMcp.StdioServer.start_link([])"]
+    command: ["mix", "mcp.server"]
     stdin_open: true
     tty: true
     restart: unless-stopped

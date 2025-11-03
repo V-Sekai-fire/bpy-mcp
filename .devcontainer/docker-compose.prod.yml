@@ -16,7 +16,7 @@ services:
     working_dir: /workspace
     ports:
       - "4000:4000"
-    command: ["mix", "run", "-e", "BpyMcp.StdioServer.start_link([])"]
+    command: ["mix", "mcp.server"]
     stdin_open: true
     tty: true
     restart: unless-stopped
