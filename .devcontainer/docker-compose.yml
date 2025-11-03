@@ -8,7 +8,6 @@ services:
     platform: linux/amd64
     container_name: bpy-mcp-server
     environment:
-      - MCP_STDIO=true
       - MIX_ENV=prod
       - ELIXIR_ERL_OPTIONS=+fnu
     volumes:

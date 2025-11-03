@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     environment:
       - MIX_ENV=dev
-      - MCP_STDIO=true
       - ELIXIR_ERL_OPTIONS=+fnu
     volumes:
       # Mount source code for development

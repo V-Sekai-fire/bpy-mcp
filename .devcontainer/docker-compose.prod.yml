@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     container_name: bpy-mcp-prod
     environment:
-      - MCP_STDIO=true
       - MIX_ENV=prod
       - ELIXIR_ERL_OPTIONS=+fnu
     volumes:
