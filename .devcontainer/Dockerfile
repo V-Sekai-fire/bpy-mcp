@@ -14,6 +14,8 @@ RUN dnf update -y && dnf install -y \
     ca-certificates \
     ncurses-devel \
     glibc-locale-source \
+    docker \
+    docker-compose \
     && dnf clean all && rm -rf /var/cache/dnf
 
 # Install lazygit
