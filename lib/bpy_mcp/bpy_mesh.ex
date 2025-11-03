@@ -48,14 +48,15 @@ defmodule BpyMcp.BpyMesh do
 
   ## Parameters
     - gltf_json: String containing glTF JSON data with EXT_mesh_bmesh extension
+    - temp_dir: Temporary directory for context
 
   ## Returns
     - `{:ok, String.t()}` - Success message with import details
     - `{:error, String.t()}` - Error message
   """
-  @spec import_bmesh_scene(String.t()) :: bpy_result()
-  def import_bmesh_scene(gltf_json) do
-    BpyMcp.BMesh.Import.import_gltf_scene(gltf_json)
+  @spec import_bmesh_scene(String.t(), String.t()) :: bpy_result()
+  def import_bmesh_scene(gltf_json, temp_dir) do
+    BpyMcp.BMesh.Import.import_gltf_scene(gltf_json, temp_dir)
   end
 
   @doc false

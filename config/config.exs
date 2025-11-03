@@ -3,14 +3,11 @@
 
 import Config
 
-# Configure Pythonx to install Blender Python API
-config :pythonx, :uv_init,
-  pyproject_toml: """
-  [project]
-  name = "mcp_bpy"
-  version = "0.1.0"
-  requires-python = "==3.11.*"
-  dependencies = [
-    "bpy>=4.5.4"
-  ]
-  """
+# Configure aria_storage for resource storage
+config :aria_storage, AriaStorage.Repo,
+  database: Path.join(System.user_home!(), ".bpy_mcp/aria_storage.db"),
+  pool_size: 1
+
+config :waffle,
+  storage: Waffle.Storage.Local,
+  storage_dir_prefix: Path.join(System.user_home!(), ".bpy_mcp/storage")

@@ -48,6 +48,7 @@ defmodule BpyMcp.Application do
     # Ensure required dependencies are started
     Application.ensure_all_started(:pythonx)
     Application.ensure_all_started(:briefly)
+    Application.ensure_all_started(:aria_storage)
 
     # Determine transport type from environment
     # In production/release, default to stdio for MCP client integration
@@ -105,7 +106,7 @@ defmodule BpyMcp.Application do
         # Add port only for HTTP transport
         server_opts =
           if transport_type == :http do
-            port = System.get_env("PORT", "4000") |> String.to_integer()
+        port = System.get_env("PORT", "4000") |> String.to_integer()
             Keyword.put(server_opts, :port, port)
           else
             server_opts

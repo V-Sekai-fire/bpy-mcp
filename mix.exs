@@ -23,7 +23,7 @@ defmodule BpyMcp.MixProject do
   def application do
     [
       mod: {BpyMcp.Application, []},
-      applications: [:logger, :ex_mcp, :pythonx, :briefly, :macfly]
+      applications: [:logger, :ex_mcp, :pythonx, :briefly, :macfly, :aria_storage]
     ]
   end
 
@@ -37,6 +37,7 @@ defmodule BpyMcp.MixProject do
       {:macfly, "~> 0.2.20"},
       {:plug, "~> 1.16"},
       {:plug_cowboy, "~> 2.7"},
+      {:aria_storage, git: "https://github.com/V-Sekai-fire/aria-storage.git"},
       {:dialyxir, "~> 1.4.6", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

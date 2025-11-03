@@ -48,7 +48,7 @@ defmodule BpyMcp.BpyMeshTest do
     end
   end
 
-  describe "import_bmesh_scene/1" do
+  describe "import_bmesh_scene/2" do
     test "imports mock glTF data successfully" do
       # First export some data to get valid glTF JSON
       {:ok, gltf_data} = BpyMcp.BpyMesh.export_bmesh_scene("/tmp")
@@ -57,7 +57,7 @@ defmodule BpyMcp.BpyMeshTest do
       gltf_json = Jason.encode!(gltf_data)
 
       # Now import it back
-      result = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json)
+      result = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json, "/tmp")
 
       assert {:ok, message} = result
       assert is_binary(message)
@@ -66,7 +66,7 @@ defmodule BpyMcp.BpyMeshTest do
     end
 
     test "handles invalid JSON gracefully" do
-      result = BpyMcp.BpyMesh.import_bmesh_scene("invalid json")
+      result = BpyMcp.BpyMesh.import_bmesh_scene("invalid json", "/tmp")
 
       assert {:error, message} = result
       assert is_binary(message)
@@ -90,7 +90,7 @@ defmodule BpyMcp.BpyMeshTest do
       }
 
       gltf_json = Jason.encode!(gltf_data)
-      result = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json)
+      result = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json, "/tmp")
 
       # Should succeed but import 0 meshes since no EXT_mesh_bmesh data
       assert {:ok, message} = result
@@ -105,7 +105,7 @@ defmodule BpyMcp.BpyMeshTest do
 
       # Convert to JSON and back
       gltf_json = Jason.encode!(exported_gltf)
-      {:ok, import_message} = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json)
+      {:ok, import_message} = BpyMcp.BpyMesh.import_bmesh_scene(gltf_json, "/tmp")
 
       # Verify import succeeded
       assert String.contains?(import_message, "Imported")
