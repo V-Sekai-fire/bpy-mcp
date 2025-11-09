@@ -50,20 +50,19 @@ defmodule AriaForge.Application do
     Application.ensure_all_started(:briefly)
     Application.ensure_all_started(:aria_storage)
 
-    # Determine transport type from environment
-    # In production/release, default to stdio for MCP client integration
-    # Check if running in a release (Mix not available) or production environment
+    # Check if running in a release (Mix not available)
     is_release = not Code.ensure_loaded?(Mix)
-    is_prod = if is_release, do: true, else: Mix.env() == :prod
-    
-    default_transport = if is_prod, do: "stdio", else: "http"
-    
+
+    # Determine transport type from environment
+    # Default to http if PORT is set (container deployment like Smithery), otherwise stdio
     transport_type = 
-      case System.get_env("MCP_TRANSPORT", default_transport) do
+      case System.get_env("MCP_TRANSPORT") do
         "stdio" -> :stdio
         "http" -> :http
         "sse" -> :sse
-        _ -> if is_prod, do: :stdio, else: :http
+        _ ->
+          # Default to http if PORT is set (Smithery deployment), otherwise stdio
+          if System.get_env("PORT"), do: :http, else: :stdio
       end
     
     # Configure for stdio mode when using stdio transport
@@ -106,11 +105,28 @@ defmodule AriaForge.Application do
           name: AriaForge.NativeService
         ]
         
-        # Add port only for HTTP transport
+        # Add port and host only for HTTP transport
         server_opts =
           if transport_type == :http do
-        port = System.get_env("PORT", "4000") |> String.to_integer()
-            Keyword.put(server_opts, :port, port)
+            port = 
+              case System.get_env("PORT") do
+                nil -> 4000
+                port_str -> String.to_integer(port_str)
+              end
+            
+            # Use 0.0.0.0 for Docker/container deployments to accept external connections
+            # Use localhost for local development
+            host = 
+              case System.get_env("HOST") do
+                nil ->
+                  # Default to 0.0.0.0 if PORT is set (container deployment), otherwise localhost
+                  if System.get_env("PORT"), do: "0.0.0.0", else: "localhost"
+                host -> host
+              end
+            
+            server_opts
+            |> Keyword.put(:port, port)
+            |> Keyword.put(:host, host)
           else
             server_opts
           end

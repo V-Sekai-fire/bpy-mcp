@@ -30,7 +30,7 @@ defmodule AriaForge.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_mcp, git: "https://github.com/azmaveth/ex_mcp.git", branch: "master", override: true},
+      {:ex_mcp, git: "https://github.com/fire/ex_mcp.git", branch: "master", override: true},
       {:jason, "~> 1.4"},
       {:pythonx, "~> 0.4.0", runtime: false},
       {:briefly, "~> 0.5.1"},
