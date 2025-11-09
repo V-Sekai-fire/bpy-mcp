@@ -141,6 +141,32 @@ defmodule BpyMcp.NativeService do
     })
   end
 
+  deftool "import_mesh" do
+    meta do
+      name("Import Mesh")
+      description("Import mesh data from OpenMesh internal format")
+    end
+
+    input_schema(%{
+      type: "object",
+      properties: %{
+        openmesh_data: %{
+          type: "string",
+          description: "OpenMesh format JSON data to import"
+        },
+        context_token: %{
+          type: "string",
+          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
+        },
+        scene_id: %{
+          type: "string",
+          description: "Optional scene ID. If not provided, uses default scene."
+        }
+      },
+      required: ["openmesh_data"]
+    })
+  end
+
   deftool "introspect_blender" do
     meta do
       name("Introspect 3D API")
@@ -435,6 +461,18 @@ defmodule BpyMcp.NativeService do
     with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
          {:ok, json_data} <- BpyMcp.Mesh.Export.export_openmesh(temp_dir) do
       {:ok, %{content: [%{"type" => "text", "text" => json_data}]}, state}
+    else
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  @impl true
+  def handle_tool_call("import_mesh", args, state) do
+    openmesh_data = Map.get(args, "openmesh_data", "")
+
+    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
+         {:ok, result} <- BpyMcp.Mesh.Import.import_openmesh(openmesh_data, temp_dir) do
+      {:ok, %{content: [Helpers.text_content(result)]}, state}
     else
       {:error, reason} -> {:error, reason, state}
     end
