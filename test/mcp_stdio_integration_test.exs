@@ -7,7 +7,7 @@ defmodule AriaForge.McpStdioIntegrationTest do
 
   @moduledoc """
   Integration tests for MCP stdio transport using JSON-RPC protocol.
-  
+
   These tests verify that the MCP server correctly handles:
   - tools/list requests
   - tools/call requests (via handle_tool_call)
@@ -17,14 +17,14 @@ defmodule AriaForge.McpStdioIntegrationTest do
   setup do
     # Start the application with stdio transport for testing
     System.put_env("MCP_TRANSPORT", "stdio")
-    
+
     # Ensure application is started
     Application.ensure_all_started(:aria_forge)
-    
+
     on_exit(fn ->
       Application.stop(:aria_forge)
     end)
-    
+
     %{}
   end
 
@@ -35,40 +35,47 @@ defmodule AriaForge.McpStdioIntegrationTest do
       state = %{}
 
       result = NativeService.handle_request(request, params, state)
-      
+
       case result do
         {:reply, response, _state} ->
           assert %{"jsonrpc" => "2.0", "result" => %{"tools" => tools}} = response
+
         {:noreply, _state} ->
           # Fallback: tools/list might return noreply, try direct tool listing
           {:ok, _response, _state} = NativeService.handle_tool_call("reset_scene", %{}, %{})
           tools = ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
           assert length(tools) >= 6
       end
-      
-      tools = result |> case do
-        {:reply, response, _state} -> response["result"]["tools"]
-        _ -> ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
-      end
+
+      tools =
+        result
+        |> case do
+          {:reply, response, _state} -> response["result"]["tools"]
+          _ -> ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
+        end
+
       assert is_list(tools)
       assert length(tools) >= 6
 
       # Extract tool names - handle both map and string cases
-      tool_names = case tools do
-        list when is_list(list) ->
-          Enum.map(list, fn tool ->
-            cond do
-              is_map(tool) -> tool["name"]
-              is_binary(tool) -> tool
-              true -> inspect(tool)
-            end
-          end)
-        _ ->
-          ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
-      end
-      
+      tool_names =
+        case tools do
+          list when is_list(list) ->
+            Enum.map(list, fn tool ->
+              cond do
+                is_map(tool) -> tool["name"]
+                is_binary(tool) -> tool
+                true -> inspect(tool)
+              end
+            end)
+
+          _ ->
+            ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
+        end
+
       # Verify expected tools exist (either in response or directly via handlers)
       expected_tools = ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
+
       Enum.each(expected_tools, fn tool_name ->
         assert tool_name in tool_names or function_exported?(NativeService, :handle_tool_call, 3)
       end)
@@ -87,7 +94,7 @@ defmodule AriaForge.McpStdioIntegrationTest do
       state = %{}
 
       result = NativeService.handle_request(request, params, state)
-      
+
       case result do
         {:reply, response, _state} ->
           tools = response["result"]["tools"]
@@ -96,6 +103,7 @@ defmodule AriaForge.McpStdioIntegrationTest do
             assert Map.has_key?(tool, "inputSchema")
             refute Map.has_key?(tool, "input_schema")
           end)
+
         {:noreply, _state} ->
           # If noreply, verify tool handlers exist directly
           assert function_exported?(NativeService, :handle_tool_call, 3)
@@ -120,6 +128,7 @@ defmodule AriaForge.McpStdioIntegrationTest do
         "location" => [10, 20, 30],
         "size" => 3.0
       }
+
       state = %{}
       result = NativeService.handle_tool_call("create_cube", args, state)
 
@@ -131,10 +140,11 @@ defmodule AriaForge.McpStdioIntegrationTest do
       assert length(content) > 0
 
       # Find text content
-      text_content = Enum.find(content, fn item ->
-        item["type"] == "text"
-      end)
-      
+      text_content =
+        Enum.find(content, fn item ->
+          item["type"] == "text"
+        end)
+
       assert text_content != nil
       assert String.contains?(text_content["text"], "IntegrationTestCube")
       assert String.contains?(text_content["text"], "[10, 20, 30]")
@@ -146,6 +156,7 @@ defmodule AriaForge.McpStdioIntegrationTest do
         "location" => [5, 10, 15],
         "radius" => 2.5
       }
+
       state = %{}
       result = NativeService.handle_tool_call("create_sphere", args, state)
 
@@ -176,16 +187,16 @@ defmodule AriaForge.McpStdioIntegrationTest do
   describe "MCP Protocol Compliance" do
     test "tool responses have correct structure", %{} do
       tools = ["reset_scene", "create_cube", "get_scene_info"]
-      
+
       Enum.each(tools, fn tool_name ->
         args = %{}
         state = %{}
         {:ok, response, _state} = NativeService.handle_tool_call(tool_name, args, state)
-        
+
         assert Map.has_key?(response, :content)
         assert is_list(response.content)
         assert length(response.content) > 0
-        
+
         # Each content item should have type and text
         Enum.each(response.content, fn item ->
           assert Map.has_key?(item, "type")
@@ -220,13 +231,14 @@ defmodule AriaForge.McpStdioIntegrationTest do
       list_request = %{"method" => "tools/list"}
       list_params = %{}
       list_state = %{}
-      
+
       list_result = NativeService.handle_request(list_request, list_params, list_state)
-      
+
       # Verify tools are available regardless of response type
       case list_result do
         {:reply, list_response, _list_state} ->
           assert length(list_response["result"]["tools"]) >= 6
+
         {:noreply, _list_state} ->
           # Tools are still available via handle_tool_call
           {:ok, _response, _state} = NativeService.handle_tool_call("reset_scene", %{}, %{})
@@ -238,18 +250,28 @@ defmodule AriaForge.McpStdioIntegrationTest do
       assert {:ok, _reset_response, reset_state} = reset_result
 
       # Step 3: Create objects
-      cube_result = NativeService.handle_tool_call("create_cube", %{
-        "name" => "WorkflowCube",
-        "location" => [1, 2, 3]
-      }, reset_state)
-      
+      cube_result =
+        NativeService.handle_tool_call(
+          "create_cube",
+          %{
+            "name" => "WorkflowCube",
+            "location" => [1, 2, 3]
+          },
+          reset_state
+        )
+
       assert {:ok, _cube_response, cube_state} = cube_result
 
-      sphere_result = NativeService.handle_tool_call("create_sphere", %{
-        "name" => "WorkflowSphere",
-        "location" => [4, 5, 6]
-      }, cube_state)
-      
+      sphere_result =
+        NativeService.handle_tool_call(
+          "create_sphere",
+          %{
+            "name" => "WorkflowSphere",
+            "location" => [4, 5, 6]
+          },
+          cube_state
+        )
+
       assert {:ok, _sphere_response, sphere_state} = sphere_result
 
       # Step 4: Get scene info

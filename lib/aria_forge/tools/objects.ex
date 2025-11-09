@@ -40,4 +40,3 @@ defmodule AriaForge.Tools.Objects do
   @doc false
   def test_mock_create_sphere(name, location, radius), do: mock_create_sphere(name, location, radius)
 end
-

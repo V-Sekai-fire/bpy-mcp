@@ -27,7 +27,7 @@ defmodule AriaForge.Tools do
   defdelegate create_cube(name \\ "Cube", location \\ [0, 0, 0], size \\ 2.0, temp_dir),
     to: Objects
 
-@doc """
+  @doc """
   Creates a sphere object in the scene.
   """
   @spec create_sphere(String.t(), [number()], number(), String.t()) :: result()
@@ -36,9 +36,9 @@ defmodule AriaForge.Tools do
 
   # Material functions
   @doc """
-Sets a material on an object.
-"""
-@spec set_material(String.t(), String.t(), [number()], String.t()) :: result()
+  Sets a material on an object.
+  """
+  @spec set_material(String.t(), String.t(), [number()], String.t()) :: result()
   defdelegate set_material(
                 object_name,
                 material_name \\ "Material",
@@ -48,10 +48,10 @@ Sets a material on an object.
               to: Materials
 
   # Rendering functions
-@doc """
-Renders the current scene to an image file.
-"""
-@spec render_image(String.t(), integer(), integer(), String.t()) :: result()
+  @doc """
+  Renders the current scene to an image file.
+  """
+  @spec render_image(String.t(), integer(), integer(), String.t()) :: result()
   defdelegate render_image(
                 filepath,
                 resolution_x \\ 1920,
@@ -61,16 +61,16 @@ Renders the current scene to an image file.
               to: Rendering
 
   # Scene management functions
-@doc """
-Resets the scene to a clean state by removing all objects.
-"""
-@spec reset_scene(String.t()) :: result()
+  @doc """
+  Resets the scene to a clean state by removing all objects.
+  """
+  @spec reset_scene(String.t()) :: result()
   defdelegate reset_scene(temp_dir), to: Scene
 
-@doc """
-Gets information about the current scene.
-"""
-@spec get_scene_info(String.t()) :: result()
+  @doc """
+  Gets information about the current scene.
+  """
+  @spec get_scene_info(String.t()) :: result()
   defdelegate get_scene_info(temp_dir), to: Scene
 
   # Introspection functions
@@ -112,25 +112,25 @@ Gets information about the current scene.
   defdelegate execute_plan(plan_data, temp_dir), to: Planning
 
   # Test helper functions for backward compatibility
-@doc false
+  @doc false
   def test_mock_create_cube(name, location, size),
     do: Objects.test_mock_create_cube(name, location, size)
 
-@doc false
+  @doc false
   def test_mock_create_sphere(name, location, radius),
     do: Objects.test_mock_create_sphere(name, location, radius)
 
-@doc false
+  @doc false
   def test_mock_set_material(object_name, material_name, color),
     do: Materials.test_mock_set_material(object_name, material_name, color)
 
-@doc false
-def test_mock_render_image(filepath, resolution_x, resolution_y),
+  @doc false
+  def test_mock_render_image(filepath, resolution_x, resolution_y),
     do: Rendering.test_mock_render_image(filepath, resolution_x, resolution_y)
 
-@doc false
+  @doc false
   def test_mock_get_scene_info(), do: Scene.test_mock_get_scene_info()
 
-@doc false
+  @doc false
   def test_mock_reset_scene(), do: Scene.test_mock_reset_scene()
 end

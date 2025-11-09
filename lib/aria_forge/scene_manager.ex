@@ -98,6 +98,7 @@ defmodule AriaForge.SceneManager do
   def terminate(_reason, state) do
     # Clean up temporary directory when process terminates
     temp_dir = Map.get(state, :temp_dir)
+
     if temp_dir && File.exists?(temp_dir) && String.starts_with?(temp_dir, System.tmp_dir!()) do
       try do
         File.rm_rf(temp_dir)
@@ -107,6 +108,7 @@ defmodule AriaForge.SceneManager do
           Logger.warning("Failed to clean up temp directory #{temp_dir}: #{Exception.message(e)}")
       end
     end
+
     :ok
   end
 

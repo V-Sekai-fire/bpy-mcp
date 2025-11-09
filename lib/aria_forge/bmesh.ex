@@ -13,8 +13,10 @@ defmodule AriaForge.BMesh do
   def ensure_pythonx do
     # Force mock mode during testing to avoid initialization
     # unless explicitly disabled
-    force_mock = Application.get_env(:aria_forge, :force_mock, false) or 
-                 (System.get_env("MIX_ENV") == "test" and System.get_env("BYP_MCP_USE_NATIVE") != "true")
+    force_mock =
+      Application.get_env(:aria_forge, :force_mock, false) or
+        (System.get_env("MIX_ENV") == "test" and System.get_env("BYP_MCP_USE_NATIVE") != "true")
+
     if force_mock do
       :mock
     else

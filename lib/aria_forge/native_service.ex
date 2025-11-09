@@ -195,7 +195,10 @@ defmodule AriaForge.NativeService do
   deftool "introspect_python" do
     meta do
       name("Introspect Python")
-      description("Introspect any Python object/API structure, methods, and attributes for debugging and understanding Python APIs. READ-ONLY: No code execution or state modification.")
+
+      description(
+        "Introspect any Python object/API structure, methods, and attributes for debugging and understanding Python APIs. READ-ONLY: No code execution or state modification."
+      )
     end
 
     input_schema(%{
@@ -203,7 +206,8 @@ defmodule AriaForge.NativeService do
       properties: %{
         object_path: %{
           type: "string",
-          description: "Python object path to introspect (e.g., 'json', 'sys', 'math', 'collections.defaultdict'). Only alphanumeric characters, dots, and underscores allowed for security.",
+          description:
+            "Python object path to introspect (e.g., 'json', 'sys', 'math', 'collections.defaultdict'). Only alphanumeric characters, dots, and underscores allowed for security.",
           default: "json"
         },
         context_token: %{
@@ -222,7 +226,10 @@ defmodule AriaForge.NativeService do
   deftool "plan_scene_construction" do
     meta do
       name("Plan Scene Construction")
-      description("Plans a sequence of commands to construct a scene from initial state to goal state. Returns a JSON plan with ordered steps.")
+
+      description(
+        "Plans a sequence of commands to construct a scene from initial state to goal state. Returns a JSON plan with ordered steps."
+      )
     end
 
     input_schema(%{
@@ -238,7 +245,8 @@ defmodule AriaForge.NativeService do
             },
             goal_state: %{
               type: "object",
-              description: "Desired scene state (e.g., {'objects': [{'type': 'cube', 'name': 'Cube1', 'location': [0,0,0]}]})"
+              description:
+                "Desired scene state (e.g., {'objects': [{'type': 'cube', 'name': 'Cube1', 'location': [0,0,0]}]})"
             },
             constraints: %{
               type: "array",
@@ -304,7 +312,10 @@ defmodule AriaForge.NativeService do
   deftool "plan_animation" do
     meta do
       name("Plan Animation")
-      description("Plans animation sequences with temporal constraints. Generates keyframe timing that respects dependencies and deadlines.")
+
+      description(
+        "Plans animation sequences with temporal constraints. Generates keyframe timing that respects dependencies and deadlines."
+      )
     end
 
     input_schema(%{
@@ -346,7 +357,10 @@ defmodule AriaForge.NativeService do
   deftool "execute_plan" do
     meta do
       name("Execute Plan")
-      description("Executes a previously generated plan by calling aria-forge tools in the specified order. Handles dependencies and failures.")
+
+      description(
+        "Executes a previously generated plan by calling aria-forge tools in the specified order. Handles dependencies and failures."
+      )
     end
 
     input_schema(%{
@@ -354,7 +368,8 @@ defmodule AriaForge.NativeService do
       properties: %{
         plan_data: %{
           type: "string",
-          description: "JSON string containing the plan to execute (as returned by plan_scene_construction, plan_material_application, or plan_animation)"
+          description:
+            "JSON string containing the plan to execute (as returned by plan_scene_construction, plan_material_application, or plan_animation)"
         },
         context_token: %{
           type: "string",
@@ -372,7 +387,10 @@ defmodule AriaForge.NativeService do
   deftool "run_lazy" do
     meta do
       name("Run Lazy Planner")
-      description("Generic planning tool using run_lazy that handles goal decomposition, dependencies, temporal constraints, and custom domain specifications. Supports any planning scenario that PERT or other planners could handle.")
+
+      description(
+        "Generic planning tool using run_lazy that handles goal decomposition, dependencies, temporal constraints, and custom domain specifications. Supports any planning scenario that PERT or other planners could handle."
+      )
     end
 
     input_schema(%{
@@ -388,11 +406,13 @@ defmodule AriaForge.NativeService do
             },
             tasks: %{
               type: "array",
-              description: "List of tasks to achieve. Tasks can be high-level goals (decomposed by domain methods) or specific commands (called directly). Each task can be a string (task name), array [task_name, args], or object {\"task\": name, \"args\": args}"
+              description:
+                "List of tasks to achieve. Tasks can be high-level goals (decomposed by domain methods) or specific commands (called directly). Each task can be a string (task name), array [task_name, args], or object {\"task\": name, \"args\": args}"
             },
             domain: %{
               type: "object",
-              description: "Optional custom domain specification with methods and commands. If not provided, uses default domain",
+              description:
+                "Optional custom domain specification with methods and commands. If not provided, uses default domain",
               properties: %{
                 methods: %{
                   type: "object",
@@ -435,7 +455,10 @@ defmodule AriaForge.NativeService do
   deftool "acquire_context" do
     meta do
       name("Acquire Context")
-      description("Acquire a scene context (create new or get existing) and return a context token. Access is free/shared - multiple users can access the same context. Can acquire from stored resources.")
+
+      description(
+        "Acquire a scene context (create new or get existing) and return a context token. Access is free/shared - multiple users can access the same context. Can acquire from stored resources."
+      )
     end
 
     input_schema(%{
@@ -457,7 +480,10 @@ defmodule AriaForge.NativeService do
   deftool "fork_resource" do
     meta do
       name("Fork Resource")
-      description("Fork a stored resource into a new scene context. Creates an independent copy of the stored scene for editing. Access is free/shared - multiple users can access the same context.")
+
+      description(
+        "Fork a stored resource into a new scene context. Creates an independent copy of the stored scene for editing. Access is free/shared - multiple users can access the same context."
+      )
     end
 
     input_schema(%{
@@ -509,7 +535,10 @@ defmodule AriaForge.NativeService do
   deftool "get_context_token" do
     meta do
       name("Get Context Token")
-      description("Get a context token for a scene from a resource URI or scene ID. Use this token in other tools to operate on that specific scene.")
+
+      description(
+        "Get a context token for a scene from a resource URI or scene ID. Use this token in other tools to operate on that specific scene."
+      )
     end
 
     input_schema(%{
@@ -565,7 +594,10 @@ defmodule AriaForge.NativeService do
   deftool "aria_math" do
     meta do
       name("Aria Math")
-      description("Call aria_math API functions. Supports Primitives, Vector3, Matrix4, and Quaternion modules with their whitelisted functions.")
+
+      description(
+        "Call aria_math API functions. Supports Primitives, Vector3, Matrix4, and Quaternion modules with their whitelisted functions."
+      )
     end
 
     input_schema(%{
@@ -590,149 +622,6 @@ defmodule AriaForge.NativeService do
     })
   end
 
-  deftool "sympy_solve" do
-    meta do
-      name("SymPy Solve")
-      description("Solve symbolic equations using SymPy (e.g., x**2 - 1 = 0 for x)")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        equation: %{
-          type: "string",
-          description: "String representation of the equation (e.g., 'x**2 - 1')"
-        },
-        variable: %{
-          type: "string",
-          description: "Variable to solve for (e.g., 'x')"
-        }
-      },
-      required: ["equation", "variable"]
-    })
-  end
-
-  deftool "sympy_simplify" do
-    meta do
-      name("SymPy Simplify")
-      description("Simplify symbolic expressions using SymPy")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression to simplify"
-        }
-      },
-      required: ["expression"]
-    })
-  end
-
-  deftool "sympy_differentiate" do
-    meta do
-      name("SymPy Differentiate")
-      description("Compute the derivative of an expression using SymPy")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression"
-        },
-        variable: %{
-          type: "string",
-          description: "Variable to differentiate with respect to"
-        }
-      },
-      required: ["expression", "variable"]
-    })
-  end
-
-  deftool "sympy_integrate" do
-    meta do
-      name("SymPy Integrate")
-      description("Compute the integral of an expression using SymPy")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression"
-        },
-        variable: %{
-          type: "string",
-          description: "Variable to integrate with respect to"
-        }
-      },
-      required: ["expression", "variable"]
-    })
-  end
-
-  deftool "sympy_expand" do
-    meta do
-      name("SymPy Expand")
-      description("Expand symbolic expressions using SymPy")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression to expand"
-        }
-      },
-      required: ["expression"]
-    })
-  end
-
-  deftool "sympy_factor" do
-    meta do
-      name("SymPy Factor")
-      description("Factor symbolic expressions using SymPy")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression to factor"
-        }
-      },
-      required: ["expression"]
-    })
-  end
-
-  deftool "sympy_evaluate" do
-    meta do
-      name("SymPy Evaluate")
-      description("Evaluate symbolic expressions numerically using SymPy with variable substitutions")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        expression: %{
-          type: "string",
-          description: "String representation of the expression to evaluate"
-        },
-        substitutions: %{
-          type: "object",
-          description: "Map of variable names to numeric values for substitution",
-          default: %{}
-        }
-      },
-      required: ["expression"]
-    })
-  end
-
   # Override handle_request to delegate to Resources module
   @impl true
   def handle_request(%{"method" => "resources/list"} = request, _params, state) do
@@ -748,9 +637,10 @@ defmodule AriaForge.NativeService do
   @impl true
   def handle_request(%{"method" => "prompts/list"} = request, _params, state) do
     prompts = Prompts.list_prompts()
-    
+
     id = Map.get(request, "id", nil)
-    response = 
+
+    response =
       %{
         "jsonrpc" => "2.0",
         "result" => %{
@@ -758,29 +648,31 @@ defmodule AriaForge.NativeService do
         }
       }
       |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-    
+
     {:reply, response, state}
   end
 
   @impl true
   def handle_request(%{"method" => "prompts/get"} = request, params, state) do
     prompt_name = Map.get(params, "name", "")
-    
+
     case Prompts.get_prompt(prompt_name) do
       {:ok, prompt} ->
         id = Map.get(request, "id", nil)
-        response = 
+
+        response =
           %{
             "jsonrpc" => "2.0",
             "result" => prompt
           }
           |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-        
+
         {:reply, response, state}
-      
+
       {:error, reason} ->
         id = Map.get(request, "id", nil)
-        response = 
+
+        response =
           %{
             "jsonrpc" => "2.0",
             "error" => %{
@@ -789,7 +681,7 @@ defmodule AriaForge.NativeService do
             }
           }
           |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-        
+
         {:reply, response, state}
     end
   end
@@ -800,9 +692,9 @@ defmodule AriaForge.NativeService do
   def handle_request(%{"method" => "tools/list"} = request, _params, state) do
     # Get tools directly using get_tools() from ex_mcp
     tools_map = get_tools()
-    
+
     # Convert tools map to list format required by MCP spec
-    tools_list = 
+    tools_list =
       tools_map
       |> Map.values()
       |> Enum.map(fn tool ->
@@ -813,12 +705,12 @@ defmodule AriaForge.NativeService do
           "inputSchema" => SchemaConverter.convert_keys_to_camel_case(tool.input_schema)
         }
       end)
-    
+
     # Get id from request if present
     id = Map.get(request, "id", nil)
-    
+
     # Build proper JSON-RPC response
-    response = 
+    response =
       %{
         "jsonrpc" => "2.0",
         "result" => %{
@@ -826,7 +718,7 @@ defmodule AriaForge.NativeService do
         }
       }
       |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-    
+
     {:reply, response, state}
   end
 
@@ -840,6 +732,7 @@ defmodule AriaForge.NativeService do
       case Context.encode_context_token(context_pid, %{scene_id: Context.get_scene_id(context_pid), operation_count: 0}) do
         {:ok, _token} ->
           {:ok, %{content: [Helpers.text_content("Scene reset successfully")]}, state}
+
         _ ->
           {:ok, %{content: [Helpers.text_content("Result: #{result}")]}, state}
       end
@@ -998,22 +891,22 @@ defmodule AriaForge.NativeService do
   def handle_tool_call("acquire_context", args, state) do
     scene_id = Map.get(args, "scene_id", "default")
     resource_uri = Map.get(args, "resource_uri")
-    
+
     cond do
       # Acquire from stored resource: load from AriaStorage
       resource_uri != nil and String.starts_with?(resource_uri, "aria://stored/") ->
         handle_acquire_from_stored(resource_uri, scene_id, state)
-      
+
       # Acquire from active scene resource: get existing context
       resource_uri != nil and String.starts_with?(resource_uri, "aria://scene/") ->
         case Helpers.parse_scene_uri(resource_uri) do
           {:ok, sid} ->
             handle_set_context(sid, state)
-          
+
           {:error, reason} ->
             {:error, "Invalid resource URI: #{reason}", state}
         end
-      
+
       # Standard acquire_context: create or get by scene_id
       true ->
         handle_set_context(scene_id, state)
@@ -1025,38 +918,38 @@ defmodule AriaForge.NativeService do
     resource_uri = Map.get(args, "resource_uri")
     storage_ref = Map.get(args, "storage_ref")
     new_scene_id = Map.get(args, "new_scene_id")
-    
+
     # Determine storage_ref from URI or direct parameter
-    target_storage_ref = 
+    target_storage_ref =
       if resource_uri do
         String.replace_prefix(resource_uri, "aria://stored/", "")
       else
         storage_ref
       end
-    
+
     if not target_storage_ref or target_storage_ref == "" do
       {:error, "Must provide either resource_uri or storage_ref", state}
     else
       # Generate new scene_id if not provided
       final_scene_id = new_scene_id || "forked_#{target_storage_ref}_#{System.unique_integer([:positive])}"
-      
+
       # Retrieve the stored resource and fork it
       case ResourceStorage.get_scene_resource(target_storage_ref, format: :json) do
         {:ok, stored_data} ->
           case AriaForge.set_context(final_scene_id) do
             {:ok, pid} ->
               # Store the forked scene to AriaStorage as a new independent resource
-              case ResourceStorage.store_scene_resource(final_scene_id, stored_data, 
-                format: :json, 
-                compression: :zstd
-              ) do
+              case ResourceStorage.store_scene_resource(final_scene_id, stored_data,
+                     format: :json,
+                     compression: :zstd
+                   ) do
                 {:ok, _forked_ref} ->
                   metadata = %{
-                    scene_id: final_scene_id, 
-                    operation_count: 0, 
+                    scene_id: final_scene_id,
+                    operation_count: 0,
                     forked_from: target_storage_ref
                   }
-                  
+
                   case Context.encode_context_token(pid, metadata) do
                     {:ok, token} ->
                       info = %{
@@ -1065,21 +958,22 @@ defmodule AriaForge.NativeService do
                         forked_from: target_storage_ref,
                         resource_uri: "aria://scene/#{final_scene_id}"
                       }
-                      
-                      {:ok, %{content: [Helpers.text_content("Resource forked successfully: #{Jason.encode!(info)}")]}, Map.put(state, :context_token, token)}
-                    
+
+                      {:ok, %{content: [Helpers.text_content("Resource forked successfully: #{Jason.encode!(info)}")]},
+                       Map.put(state, :context_token, token)}
+
                     {:error, reason} ->
                       {:error, "Failed to encode context token: #{reason}", state}
                   end
-                
+
                 {:error, reason} ->
                   {:error, "Failed to store forked resource: #{reason}", state}
               end
-            
+
             {:error, reason} ->
               {:error, "Failed to create forked context: #{reason}", state}
           end
-        
+
         {:error, reason} ->
           {:error, "Failed to retrieve stored resource: #{reason}", state}
       end
@@ -1090,26 +984,28 @@ defmodule AriaForge.NativeService do
   defp handle_set_context(scene_id, state) do
     with {:ok, pid} <- AriaForge.set_context(scene_id) do
       metadata = %{
-        scene_id: scene_id, 
+        scene_id: scene_id,
         operation_count: 0
       }
-      
+
       case Context.encode_context_token(pid, metadata) do
         {:ok, token} ->
           pid_str = :erlang.pid_to_list(pid) |> List.to_string()
+
           info = %{
             scene_id: scene_id,
             context_token: token,
             pid: pid_str
           }
-          
-          {:ok, %{content: [Helpers.text_content("Context acquired successfully: #{Jason.encode!(info)}")]}, Map.put(state, :context_token, token)}
-        
+
+          {:ok, %{content: [Helpers.text_content("Context acquired successfully: #{Jason.encode!(info)}")]},
+           Map.put(state, :context_token, token)}
+
         {:error, reason} ->
           {:error, "Failed to encode context token: #{reason}", state}
       end
     else
-      {:error, reason} -> 
+      {:error, reason} ->
         {:error, "Failed to set context: #{reason}", state}
     end
   end
@@ -1118,22 +1014,23 @@ defmodule AriaForge.NativeService do
   defp handle_acquire_from_stored(resource_uri, scene_id, state) do
     storage_ref = String.replace_prefix(resource_uri, "aria://stored/", "")
     final_scene_id = if scene_id == "default", do: storage_ref, else: scene_id
-    
+
     case ResourceStorage.get_scene_resource(storage_ref, format: :json) do
       {:ok, stored_data} ->
         case AriaForge.set_context(final_scene_id) do
           {:ok, pid} ->
             # Import scene data if available
-            import_result = 
+            import_result =
               if is_map(stored_data) do
                 # Check if we have glTF data to import
                 cond do
                   Map.has_key?(stored_data, "gltf_data") ->
                     # Import glTF BMesh data
-                    gltf_json = if is_binary(stored_data["gltf_data"]), 
-                      do: stored_data["gltf_data"], 
-                      else: Jason.encode!(stored_data["gltf_data"])
-                    
+                    gltf_json =
+                      if is_binary(stored_data["gltf_data"]),
+                        do: stored_data["gltf_data"],
+                        else: Jason.encode!(stored_data["gltf_data"])
+
                     # Get temp_dir for this context
                     case Context.get_or_create_context(%{"scene_id" => final_scene_id}, %{}) do
                       {:ok, temp_dir, _context_pid} ->
@@ -1141,10 +1038,11 @@ defmodule AriaForge.NativeService do
                           {:ok, _message} -> :ok
                           {:error, reason} -> {:error, "Failed to import scene data: #{reason}"}
                         end
+
                       {:error, reason} ->
                         {:error, "Failed to get context for import: #{reason}"}
                     end
-                  
+
                   Map.has_key?(stored_data, "scene_info") ->
                     # Scene info available but no glTF data - scene is already active
                     # Just reset to ensure clean state
@@ -1154,10 +1052,11 @@ defmodule AriaForge.NativeService do
                           {:ok, _} -> :ok
                           {:error, reason} -> {:error, "Failed to reset scene: #{reason}"}
                         end
+
                       {:error, reason} ->
                         {:error, "Failed to get context for reset: #{reason}"}
                     end
-                  
+
                   true ->
                     # No importable data
                     :ok
@@ -1165,19 +1064,19 @@ defmodule AriaForge.NativeService do
               else
                 :ok
               end
-            
+
             # Log import result but don't fail context creation if import fails
             if match?({:error, _}, import_result) do
               # Non-blocking error logging (won't break stdio mode)
               # In production, this would go to Logger, but we avoid that in stdio mode
             end
-            
+
             metadata = %{
-              scene_id: final_scene_id, 
+              scene_id: final_scene_id,
               operation_count: 0,
               acquired_from: storage_ref
             }
-            
+
             case Context.encode_context_token(pid, metadata) do
               {:ok, token} ->
                 info = %{
@@ -1186,29 +1085,30 @@ defmodule AriaForge.NativeService do
                   acquired_from: storage_ref,
                   resource_uri: "aria://scene/#{final_scene_id}"
                 }
-                
-                {:ok, %{content: [Helpers.text_content("Context acquired from stored resource: #{Jason.encode!(info)}")]}, Map.put(state, :context_token, token)}
-              
+
+                {:ok,
+                 %{content: [Helpers.text_content("Context acquired from stored resource: #{Jason.encode!(info)}")]},
+                 Map.put(state, :context_token, token)}
+
               {:error, reason} ->
                 {:error, "Failed to encode context token: #{reason}", state}
             end
-          
+
           {:error, reason} ->
             {:error, "Failed to create context from stored resource: #{reason}", state}
         end
-      
+
       {:error, reason} ->
         {:error, "Failed to retrieve stored resource: #{reason}", state}
     end
   end
-
 
   @impl true
   def handle_tool_call("get_context", args, state) do
     context_token = Map.get(args, "context_token")
     resource_uri = Map.get(args, "resource_uri")
     scene_id = Map.get(args, "scene_id", "default")
-    
+
     cond do
       resource_uri != nil ->
         # Parse resource URI to get scene_id
@@ -1218,6 +1118,7 @@ defmodule AriaForge.NativeService do
             case AriaForge.set_context(sid) do
               {:ok, pid} ->
                 scene_id_from_pid = Context.get_scene_id(pid)
+
                 case Context.encode_context_token(pid, %{scene_id: scene_id_from_pid, operation_count: 0}) do
                   {:ok, token} ->
                     info = %{
@@ -1227,46 +1128,51 @@ defmodule AriaForge.NativeService do
                       pid: :erlang.pid_to_list(pid) |> List.to_string(),
                       status: "active"
                     }
-                    {:ok, %{content: [Helpers.text_content("Context info from resource: #{Jason.encode!(info)}")]}, state}
-                  
+
+                    {:ok, %{content: [Helpers.text_content("Context info from resource: #{Jason.encode!(info)}")]},
+                     state}
+
                   {:error, reason} ->
                     {:error, "Failed to encode context token: #{reason}", state}
                 end
-              
+
               {:error, reason} ->
                 {:error, "Failed to get context from resource URI: #{reason}", state}
             end
-          
+
           {:error, reason} ->
             {:error, "Invalid resource URI: #{reason}", state}
         end
-      
+
       context_token != nil ->
         # Decode token to get context info
         case Context.decode_context_token(context_token) do
           {:ok, %{pid: pid, metadata: metadata}} ->
             if Process.alive?(pid) do
               scene_id_from_pid = Context.get_scene_id(pid)
+
               info = %{
                 scene_id: scene_id_from_pid,
                 pid: :erlang.pid_to_list(pid) |> List.to_string(),
                 metadata: metadata,
                 status: "active"
               }
+
               {:ok, %{content: [Helpers.text_content("Context info: #{Jason.encode!(info)}")]}, state}
             else
               {:error, "Context token refers to a dead process", state}
             end
-          
+
           {:error, reason} ->
             {:error, "Failed to decode context token: #{reason}", state}
         end
-      
+
       true ->
         # Get context by scene_id
         case AriaForge.set_context(scene_id) do
           {:ok, pid} ->
             scene_id_from_pid = Context.get_scene_id(pid)
+
             case Context.encode_context_token(pid, %{scene_id: scene_id_from_pid, operation_count: 0}) do
               {:ok, token} ->
                 info = %{
@@ -1275,12 +1181,13 @@ defmodule AriaForge.NativeService do
                   pid: :erlang.pid_to_list(pid) |> List.to_string(),
                   status: "active"
                 }
+
                 {:ok, %{content: [Helpers.text_content("Context info: #{Jason.encode!(info)}")]}, state}
-              
+
               {:error, reason} ->
                 {:error, "Failed to encode context token: #{reason}", state}
             end
-          
+
           {:error, reason} ->
             {:error, "Failed to get context: #{reason}", state}
         end
@@ -1291,9 +1198,9 @@ defmodule AriaForge.NativeService do
   def handle_tool_call("get_context_token", args, state) do
     resource_uri = Map.get(args, "resource_uri")
     scene_id = Map.get(args, "scene_id", "default")
-    
+
     # Determine scene_id from resource_uri or use provided scene_id
-    target_scene_id = 
+    target_scene_id =
       if resource_uri do
         case Helpers.parse_scene_uri(resource_uri) do
           {:ok, sid} -> {:ok, sid}
@@ -1302,30 +1209,33 @@ defmodule AriaForge.NativeService do
       else
         {:ok, scene_id}
       end
-    
+
     case target_scene_id do
       {:ok, sid} ->
         case AriaForge.set_context(sid) do
           {:ok, pid} ->
             scene_id_actual = Context.get_scene_id(pid)
+
             case Context.encode_context_token(pid, %{scene_id: scene_id_actual, operation_count: 0}) do
               {:ok, token} ->
                 info = %{
                   resource_uri: if(resource_uri, do: resource_uri, else: "aria://scene/#{sid}"),
                   scene_id: scene_id_actual,
                   context_token: token,
-                  usage: "Use this context_token in other tools (create_cube, create_sphere, etc.) to operate on this scene"
+                  usage:
+                    "Use this context_token in other tools (create_cube, create_sphere, etc.) to operate on this scene"
                 }
+
                 {:ok, %{content: [Helpers.text_content("Context token for scene: #{Jason.encode!(info)}")]}, state}
-              
+
               {:error, reason} ->
                 {:error, "Failed to generate context token: #{reason}", state}
             end
-          
+
           {:error, reason} ->
             {:error, "Failed to get context: #{reason}", state}
         end
-      
+
       {:error, reason} ->
         {:error, reason, state}
     end
@@ -1345,9 +1255,9 @@ defmodule AriaForge.NativeService do
               status: if(Process.alive?(pid), do: "active", else: "dead")
             }
           end)
-        
+
         {:ok, %{content: [Helpers.text_content("Active contexts: #{Jason.encode!(formatted_contexts)}")]}, state}
-      
+
       {:error, reason} ->
         {:error, "Failed to list contexts: #{reason}", state}
     end
@@ -1358,88 +1268,11 @@ defmodule AriaForge.NativeService do
     module = Map.get(args, "module")
     function = Map.get(args, "function")
     function_args = Map.get(args, "args", [])
-    
+
     case AriaForge.MathTools.call_aria_math(module, function, function_args) do
       {:ok, result} ->
         {:ok, %{content: [Helpers.text_content("Result: #{inspect(result)}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
 
-  @impl true
-  def handle_tool_call("sympy_solve", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_solve", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Solution: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_simplify", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_simplify", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Simplified: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_differentiate", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_differentiate", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Derivative: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_integrate", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_integrate", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Integral: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_expand", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_expand", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Expanded: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_factor", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_factor", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Factored: #{result}")]}, state}
-      
-      {:error, reason} ->
-        {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("sympy_evaluate", args, state) do
-    case AriaForge.MathTools.call_sympy("sympy_evaluate", args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Evaluated: #{result}")]}, state}
-      
       {:error, reason} ->
         {:error, reason, state}
     end
@@ -1449,9 +1282,9 @@ defmodule AriaForge.NativeService do
   def handle_tool_call("stop_context", args, state) do
     context_token = Map.get(args, "context_token")
     scene_id = Map.get(args, "scene_id", "default")
-    
+
     # Determine which scene to stop
-    target_scene_id = 
+    target_scene_id =
       if context_token do
         case Context.decode_context_token(context_token) do
           {:ok, %{pid: pid, metadata: _metadata}} ->
@@ -1460,14 +1293,14 @@ defmodule AriaForge.NativeService do
             else
               {:error, "Context token refers to a dead process"}
             end
-          
+
           {:error, reason} ->
             {:error, "Failed to decode context token: #{reason}"}
         end
       else
         {:ok, scene_id}
       end
-    
+
     case target_scene_id do
       {:ok, sid} ->
         # Stop the context by terminating its process
@@ -1478,33 +1311,30 @@ defmodule AriaForge.NativeService do
               case DynamicSupervisor.terminate_child(AriaForge.SceneSupervisor, pid) do
                 :ok ->
                   {:ok, %{content: [Helpers.text_content("Context stopped successfully: #{sid}")]}, state}
-                
+
                 {:error, :not_found} ->
                   # Process already gone, remove from registry if possible
                   {:ok, %{content: [Helpers.text_content("Context already stopped: #{sid}")]}, state}
-                
+
                 {:error, reason} ->
                   {:error, "Failed to stop context: #{inspect(reason)}", state}
               end
             else
               {:ok, %{content: [Helpers.text_content("Context already stopped (process dead): #{sid}")]}, state}
             end
-          
+
           [] ->
             {:error, "Context not found: #{sid}", state}
         end
-      
+
       {:error, reason} ->
         {:error, reason, state}
     end
   end
-
-
 
   # Fallback for unknown tools
   @impl true
   def handle_tool_call(tool_name, _args, state) do
     {:error, "Tool not found: #{tool_name}", state}
   end
-
 end

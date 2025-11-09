@@ -50,4 +50,3 @@ defmodule AriaForge.Tools.Scene do
   @doc false
   def test_mock_reset_scene(), do: mock_reset_scene()
 end
-

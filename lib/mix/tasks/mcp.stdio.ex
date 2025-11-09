@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Mcp.Stdio do
   def run(_args) do
     # Configure for STDIO mode before starting
     System.put_env("MCP_TRANSPORT", "stdio")
-    
+
     # Suppress logging to stdout for stdio transport - CRITICAL for JSON-RPC
     # Any stdout output before MCP initialization will break JSON parsing
     Logger.configure(level: :emergency)
@@ -49,4 +49,3 @@ defmodule Mix.Tasks.Mcp.Stdio do
     Process.sleep(:infinity)
   end
 end
-

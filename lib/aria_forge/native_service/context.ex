@@ -4,14 +4,14 @@
 defmodule AriaForge.NativeService.Context do
   @moduledoc """
   Context management for scene operations.
-  
+
   This module handles creation and retrieval of scene contexts, including
   encoding/decoding context tokens (macaroons) that store PID and metadata.
   """
 
   @doc """
   Get or create a context from token or scene_id.
-  
+
   Returns `{:ok, temp_dir, pid}` or `{:error, reason}`.
   """
   def get_or_create_context(args, state) do
@@ -51,11 +51,12 @@ defmodule AriaForge.NativeService.Context do
       {:ok, pid} ->
         # Create temp_dir for this context
         temp_dir = Map.get(state, :temp_dir) || create_temp_dir()
-        
+
         # Encode context token
         case encode_context_token(pid, %{scene_id: scene_id, operation_count: 0}) do
           {:ok, _token} ->
             {:ok, temp_dir, pid}
+
           _ ->
             {:ok, temp_dir, pid}
         end
@@ -81,6 +82,7 @@ defmodule AriaForge.NativeService.Context do
   """
   def create_temp_dir do
     temp_path = System.tmp_dir!() <> "/aria_forge_" <> Base.encode16(:crypto.strong_rand_bytes(8))
+
     case File.mkdir_p(temp_path) do
       :ok -> temp_path
       {:error, _} -> System.tmp_dir!()
@@ -89,11 +91,11 @@ defmodule AriaForge.NativeService.Context do
 
   @doc """
   Encodes PID and metadata into a macaroon token for context strings.
-  
+
   ## Parameters
     - pid: Process ID to encode
     - metadata: Map of additional context data (scene_id, operation_count, etc.)
-  
+
   ## Returns
     - `{:ok, token}` - Base64-encoded macaroon token containing PID data
     - `{:error, reason}` - Error if encoding fails
@@ -105,24 +107,24 @@ defmodule AriaForge.NativeService.Context do
       pid_str = :erlang.pid_to_list(pid) |> List.to_string()
       data = Map.merge(metadata, %{pid: pid_str})
       data_json = Jason.encode!(data)
-      
+
       # Create macaroon with context data stored in location and as encoded data
       location = "aria-forge-context"
       secret_key = get_or_create_secret_key()
-      
+
       # Generate a unique kid (key ID) - we'll store the data in a Mutations caveat
       # Mutations caveat accepts a list of strings, so we'll encode our JSON as base64
       kid = :crypto.strong_rand_bytes(16) |> Base.encode16(case: :lower)
-      
+
       # Store PID data in a Mutations caveat (which accepts list of strings)
       # Encode the JSON data and store it as a mutation entry
       encoded_data = Base.encode64(data_json)
       # Use struct construction at runtime to avoid compile-time dependency issues
       context_caveat = struct(Macfly.Caveat.Mutations, mutations: [encoded_data])
-      
+
       # Create macaroon with the caveat containing our context data
       macaroon = Macfly.Macaroon.new(secret_key, kid, location, [context_caveat])
-      
+
       # Encode macaroon to string
       token = Macfly.Macaroon.encode(macaroon)
       {:ok, token}
@@ -133,10 +135,10 @@ defmodule AriaForge.NativeService.Context do
 
   @doc """
   Decodes a macaroon token to extract PID and metadata from context string.
-  
+
   ## Parameters
     - token: Base64-encoded macaroon token
-  
+
   ## Returns
     - `{:ok, %{pid: pid(), metadata: map()}}` - Decoded PID and metadata
     - `{:error, reason}` - Error if decoding fails
@@ -148,18 +150,18 @@ defmodule AriaForge.NativeService.Context do
       case Macfly.Macaroon.decode(token) do
         {:ok, macaroon} ->
           # Extract PID data from Mutations caveat
-          mutations_caveat = 
+          mutations_caveat =
             Enum.find(macaroon.caveats, fn caveat ->
               case caveat do
                 %Macfly.Caveat.Mutations{} -> true
                 _ -> false
               end
             end)
-          
+
           case mutations_caveat do
             nil ->
               {:error, "No context data found in token"}
-            
+
             %Macfly.Caveat.Mutations{mutations: [encoded_data | _]} ->
               # Decode the base64-encoded JSON data
               case Base.decode64(encoded_data) do
@@ -167,36 +169,39 @@ defmodule AriaForge.NativeService.Context do
                   case Jason.decode(data_json) do
                     {:ok, data} ->
                       pid_str = Map.get(data, "pid")
-                      
+
                       # Convert PID string back to PID
-                      pid = 
+                      pid =
                         try do
                           :erlang.list_to_pid(String.to_charlist(pid_str))
                         rescue
                           _ -> {:error, "Invalid PID format"}
                         end
-                      
+
                       case pid do
-                        {:error, reason} -> {:error, reason}
+                        {:error, reason} ->
+                          {:error, reason}
+
                         pid when is_pid(pid) ->
                           metadata = Map.drop(data, ["pid"])
                           {:ok, %{pid: pid, metadata: metadata}}
+
                         _ ->
                           {:error, "Failed to parse PID"}
                       end
-                    
+
                     error ->
                       {:error, "Failed to decode PID data: #{inspect(error)}"}
                   end
-                
+
                 :error ->
                   {:error, "Invalid token format: context data is not base64 encoded"}
               end
-            
+
             _ ->
               {:error, "Invalid Mutations caveat format"}
           end
-        
+
         error ->
           {:error, "Failed to decode macaroon: #{inspect(error)}"}
       end
@@ -219,33 +224,32 @@ defmodule AriaForge.NativeService.Context do
             # Generate and persist a key for development
             secret_file = Path.join(System.user_home!(), ".aria_forge/macaroon_secret")
             secret_dir = Path.dirname(secret_file)
-            
+
             # Ensure directory exists
             File.mkdir_p!(secret_dir)
-            
+
             # Read existing or generate new secret
             case File.read(secret_file) do
               {:ok, existing_secret} when byte_size(existing_secret) == 32 ->
                 existing_secret
-              
+
               _ ->
                 # Generate new secret
                 secret = :crypto.strong_rand_bytes(32)
                 File.write!(secret_file, secret, [:binary, :exclusive])
                 secret
             end
-          
+
           env_secret ->
             env_secret
         end
-      
+
       configured_secret when is_binary(configured_secret) ->
         configured_secret
-      
+
       _ ->
         # Fallback to random (non-persistent)
         :crypto.strong_rand_bytes(32)
     end
   end
 end
-

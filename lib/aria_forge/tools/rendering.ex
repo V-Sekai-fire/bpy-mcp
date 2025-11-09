@@ -27,4 +27,3 @@ defmodule AriaForge.Tools.Rendering do
   def test_mock_render_image(filepath, resolution_x, resolution_y),
     do: mock_render_image(filepath, resolution_x, resolution_y)
 end
-

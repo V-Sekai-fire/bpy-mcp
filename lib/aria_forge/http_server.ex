@@ -59,14 +59,17 @@ defmodule AriaForge.HTTPServer do
   # Handle MCP requests
   defp handle_mcp_request(conn) do
     # Try to get JSON from body_params first, then try parsing raw body
-    json_data = case conn.body_params do
-      %Plug.Conn.Unfetched{} ->
-        parse_raw_body(conn)
-      %{} = params when map_size(params) > 0 ->
-        params
-      _ ->
-        parse_raw_body(conn)
-    end
+    json_data =
+      case conn.body_params do
+        %Plug.Conn.Unfetched{} ->
+          parse_raw_body(conn)
+
+        %{} = params when map_size(params) > 0 ->
+          params
+
+        _ ->
+          parse_raw_body(conn)
+      end
 
     case json_data do
       %{"jsonrpc" => "2.0", "method" => method, "params" => params, "id" => id} ->
@@ -90,6 +93,7 @@ defmodule AriaForge.HTTPServer do
       %{body_params: %Plug.Conn.Unfetched{}} ->
         # Body not parsed yet, try to read it
         {:ok, body, _conn} = read_body(conn)
+
         case Jason.decode(body) do
           {:ok, data} -> data
           _ -> %{}
@@ -115,6 +119,7 @@ defmodule AriaForge.HTTPServer do
             }
           }
         }
+
         send_json_response(conn, 200, response)
 
       "tools/list" ->
@@ -157,6 +162,7 @@ defmodule AriaForge.HTTPServer do
           id: id,
           result: %{tools: tools}
         }
+
         send_json_response(conn, 200, response)
 
       "tools/call" ->
@@ -178,6 +184,7 @@ defmodule AriaForge.HTTPServer do
               id: id,
               result: %{content: content}
             }
+
             send_json_response(conn, 200, response)
 
           _ ->
@@ -192,6 +199,7 @@ defmodule AriaForge.HTTPServer do
               id: id,
               result: %{content: content}
             }
+
             send_json_response(conn, 200, response)
 
           {:error, reason, _state} ->
@@ -291,6 +299,7 @@ defmodule AriaForge.HTTPServer do
         message: message
       }
     }
+
     send_json_response(conn, 200, error_response)
   end
 
@@ -333,13 +342,17 @@ defmodule AriaForge.HTTPServer do
 
   # Keep the SSE connection alive with periodic messages
   defp keep_alive_loop(conn) do
-    Process.sleep(30000)  # 30 seconds
+    # 30 seconds
+    Process.sleep(30000)
+
     case chunk(conn, "event: ping\ndata: {}\n\n") do
       {:ok, _conn} ->
-        keep_alive_loop(conn)  # Continue the loop
+        # Continue the loop
+        keep_alive_loop(conn)
 
       {:error, _reason} ->
-        :ok  # Connection closed, stop the loop
+        # Connection closed, stop the loop
+        :ok
     end
   end
 

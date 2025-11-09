@@ -51,7 +51,6 @@ defmodule AriaForge.MixProject do
       {:aria_math, git: "https://github.com/V-Sekai-fire/aria-math.git"},
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:aria_planner, git: "https://github.com/V-Sekai-fire/aria-planner.git", override: true},
-      {:sympy_mcp, git: "https://github.com/V-Sekai-fire/sympy-mcp.git", override: true},
       {:dialyxir, "~> 1.4.6", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

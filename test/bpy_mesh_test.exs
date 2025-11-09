@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+
 defmodule AriaForge.MeshTest do
   use ExUnit.Case, async: true
 
@@ -35,8 +38,10 @@ defmodule AriaForge.MeshTest do
 
       # Mock cube has 6 quad faces, each producing 2 triangles = 12 triangles
       assert length(triangles) == 12
-      assert length(face_anchors) == 6  # One anchor per original face
-      assert length(triangle_normals) == 12  # One normal per triangle
+      # One anchor per original face
+      assert length(face_anchors) == 6
+      # One normal per triangle
+      assert length(triangle_normals) == 12
 
       # Each triangle should have 3 vertices
       assert Enum.all?(triangles, fn triangle -> length(triangle) == 3 end)
@@ -153,7 +158,8 @@ defmodule AriaForge.MeshTest do
       assert Map.has_key?(faces, "offsets")
       # In mock mode, vertices is a list; in real mode it would be an accessor index
       assert is_list(faces["vertices"]) or is_integer(faces["vertices"])
-      assert is_integer(faces["offsets"])   # Should be accessor index
+      # Should be accessor index
+      assert is_integer(faces["offsets"])
 
       # Test reconstruction functions work with accessor-based data
       accessors = exported_gltf["accessors"] || []
@@ -161,9 +167,14 @@ defmodule AriaForge.MeshTest do
       buffers = exported_gltf["buffers"] || []
 
       # Reconstruct actual data using accessor indices
-      reconstructed_vertices = AriaForge.Mesh.test_reconstruct_vertices_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
-      reconstructed_edges = AriaForge.Mesh.test_reconstruct_edges_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
-      reconstructed_faces = AriaForge.Mesh.test_reconstruct_faces_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
+      reconstructed_vertices =
+        AriaForge.Mesh.test_reconstruct_vertices_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
+
+      reconstructed_edges =
+        AriaForge.Mesh.test_reconstruct_edges_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
+
+      reconstructed_faces =
+        AriaForge.Mesh.test_reconstruct_faces_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
 
       # Verify reconstructed data
       assert length(reconstructed_vertices) == vertices["count"]

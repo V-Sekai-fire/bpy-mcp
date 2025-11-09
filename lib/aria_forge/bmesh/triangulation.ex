@@ -44,19 +44,23 @@ defmodule AriaForge.BMesh.Triangulation do
   @spec build_face_adjacency_map(list()) :: map()
   def build_face_adjacency_map(faces) do
     # First pass: build edge-to-faces mapping
-    edge_to_faces = Enum.reduce(Enum.with_index(faces), %{}, fn {face, face_idx}, acc ->
-      face_edges = face_edges(face)
-      Enum.reduce(face_edges, acc, fn edge, edge_acc ->
-        Map.update(edge_acc, edge, [face_idx], &[face_idx | &1])
+    edge_to_faces =
+      Enum.reduce(Enum.with_index(faces), %{}, fn {face, face_idx}, acc ->
+        face_edges = face_edges(face)
+
+        Enum.reduce(face_edges, acc, fn edge, edge_acc ->
+          Map.update(edge_acc, edge, [face_idx], &[face_idx | &1])
+        end)
       end)
-    end)
 
     # Second pass: build face adjacency map
     Enum.reduce(Enum.with_index(faces), %{}, fn {_face, face_idx}, adjacency_map ->
       # Find all faces that share at least one edge
-      adjacent_faces = Enum.flat_map(face_edges(Enum.at(faces, face_idx)), fn edge ->
-        Map.get(edge_to_faces, edge, []) |> Enum.reject(&(&1 == face_idx))
-      end) |> Enum.uniq()
+      adjacent_faces =
+        Enum.flat_map(face_edges(Enum.at(faces, face_idx)), fn edge ->
+          Map.get(edge_to_faces, edge, []) |> Enum.reject(&(&1 == face_idx))
+        end)
+        |> Enum.uniq()
 
       Map.put(adjacency_map, face_idx, adjacent_faces)
     end)
@@ -82,11 +86,13 @@ defmodule AriaForge.BMesh.Triangulation do
   def select_distinct_anchors(faces, adjacency_map) do
     Enum.map(Enum.with_index(faces), fn {face, face_idx} ->
       adjacent_faces = Map.get(adjacency_map, face_idx, [])
-      used_anchors = Enum.map(adjacent_faces, fn adj_idx ->
-        # For now, we'll assign anchors sequentially and resolve conflicts later
-        # This is a simplified approach - in practice you'd use a more sophisticated algorithm
-        rem(adj_idx, length(face))
-      end)
+
+      used_anchors =
+        Enum.map(adjacent_faces, fn adj_idx ->
+          # For now, we'll assign anchors sequentially and resolve conflicts later
+          # This is a simplified approach - in practice you'd use a more sophisticated algorithm
+          rem(adj_idx, length(face))
+        end)
 
       # Select an anchor vertex not used by adjacent faces
       available_anchors = 0..(length(face) - 1) |> Enum.reject(&(&1 in used_anchors))
@@ -161,11 +167,12 @@ defmodule AriaForge.BMesh.Triangulation do
     _triangles = []
 
     # Create triangles by connecting first vertex to each edge
-    triangles = for i <- 0..(length(rest) - 2) do
-      v1 = Enum.at(rest, i)
-      v2 = Enum.at(rest, i + 1)
-      [first, v1, v2]
-    end
+    triangles =
+      for i <- 0..(length(rest) - 2) do
+        v1 = Enum.at(rest, i)
+        v2 = Enum.at(rest, i + 1)
+        [first, v1, v2]
+      end
 
     triangles
   end

@@ -17,14 +17,14 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_scene_construction(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       assert is_map(plan)
       assert Map.has_key?(plan, "steps")
       assert Map.has_key?(plan, "total_operations")
       assert Map.has_key?(plan, "estimated_complexity")
-      
+
       assert is_list(plan["steps"])
       assert plan["total_operations"] >= 1
       assert is_binary(plan["estimated_complexity"])
@@ -44,17 +44,17 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_scene_construction(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       assert plan["total_operations"] == 2
       assert length(plan["steps"]) == 2
-      
+
       # Check first step is cube creation
       first_step = List.first(plan["steps"])
       assert first_step["tool"] == "create_cube"
       assert first_step["args"]["name"] == "Cube1"
-      
+
       # Check second step is sphere creation
       second_step = List.last(plan["steps"])
       assert second_step["tool"] == "create_sphere"
@@ -70,9 +70,9 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_scene_construction(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       assert plan["total_operations"] == 0
       assert plan["steps"] == []
       assert plan["estimated_complexity"] == "simple"
@@ -91,9 +91,9 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_scene_construction(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       step = List.first(plan["steps"])
       assert step["args"]["location"] == [1, 2, 3]
       assert step["args"]["size"] == 5.0
@@ -127,9 +127,9 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_material_application(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       assert is_map(plan)
       assert Map.has_key?(plan, "steps")
       assert Map.has_key?(plan, "total_operations")
@@ -146,7 +146,7 @@ defmodule AriaForge.PlanningTest do
       result = Planning.plan_material_application(plan_spec, @temp_dir)
       assert {:ok, json} = result
       {:ok, plan} = Jason.decode(json)
-      
+
       assert length(plan["steps"]) >= 2
     end
   end
@@ -163,9 +163,9 @@ defmodule AriaForge.PlanningTest do
 
       result = Planning.plan_animation(plan_spec, @temp_dir)
       assert {:ok, json} = result
-      
+
       {:ok, plan} = Jason.decode(json)
-      
+
       assert is_map(plan)
       assert Map.has_key?(plan, "steps")
       assert Map.has_key?(plan, "total_operations")
@@ -181,30 +181,31 @@ defmodule AriaForge.PlanningTest do
       result = Planning.plan_animation(plan_spec, @temp_dir)
       {:ok, json} = result
       {:ok, plan} = Jason.decode(json)
-      
+
       assert plan["total_frames"] == 500
     end
   end
 
   describe "execute_plan/2" do
     test "executes simple plan with create_cube" do
-      plan_data = Jason.encode!(%{
-        "steps" => [
-          %{
-            "tool" => "create_cube",
-            "args" => %{
-              "name" => "TestCube",
-              "location" => [0, 0, 0],
-              "size" => 2.0
-            },
-            "dependencies" => [],
-            "description" => "Create test cube"
-          }
-        ]
-      })
+      plan_data =
+        Jason.encode!(%{
+          "steps" => [
+            %{
+              "tool" => "create_cube",
+              "args" => %{
+                "name" => "TestCube",
+                "location" => [0, 0, 0],
+                "size" => 2.0
+              },
+              "dependencies" => [],
+              "description" => "Create test cube"
+            }
+          ]
+        })
 
       result = Planning.execute_plan(plan_data, @temp_dir)
-      
+
       # Should either succeed or fail gracefully
       assert match?({:ok, _}, result) or match?({:error, _}, result)
     end
@@ -215,40 +216,42 @@ defmodule AriaForge.PlanningTest do
     end
 
     test "executes plan with multiple steps" do
-      plan_data = Jason.encode!(%{
-        "steps" => [
-          %{
-            "tool" => "create_cube",
-            "args" => %{"name" => "Cube1", "location" => [0, 0, 0], "size" => 2.0},
-            "dependencies" => []
-          },
-          %{
-            "tool" => "create_sphere",
-            "args" => %{"name" => "Sphere1", "location" => [2, 0, 0], "radius" => 1.0},
-            "dependencies" => []
-          }
-        ]
-      })
+      plan_data =
+        Jason.encode!(%{
+          "steps" => [
+            %{
+              "tool" => "create_cube",
+              "args" => %{"name" => "Cube1", "location" => [0, 0, 0], "size" => 2.0},
+              "dependencies" => []
+            },
+            %{
+              "tool" => "create_sphere",
+              "args" => %{"name" => "Sphere1", "location" => [2, 0, 0], "radius" => 1.0},
+              "dependencies" => []
+            }
+          ]
+        })
 
       result = Planning.execute_plan(plan_data, @temp_dir)
-      
+
       # Should attempt execution (may fail in test environment)
       assert match?({:ok, _}, result) or match?({:error, _}, result)
     end
 
     test "handles unknown tool gracefully" do
-      plan_data = Jason.encode!(%{
-        "steps" => [
-          %{
-            "tool" => "unknown_tool",
-            "args" => %{},
-            "dependencies" => []
-          }
-        ]
-      })
+      plan_data =
+        Jason.encode!(%{
+          "steps" => [
+            %{
+              "tool" => "unknown_tool",
+              "args" => %{},
+              "dependencies" => []
+            }
+          ]
+        })
 
       result = Planning.execute_plan(plan_data, @temp_dir)
-      
+
       # Should fail with appropriate error
       assert {:error, _} = result
     end
@@ -270,31 +273,33 @@ defmodule AriaForge.PlanningTest do
     test "returns valid JSON for all planning functions" do
       # Test all planning functions return valid JSON
       test_cases = [
-        {&Planning.plan_scene_construction/2, %{
-          "initial_state" => %{},
-          "goal_state" => %{"objects" => []},
-          "constraints" => []
-        }},
-        {&Planning.plan_material_application/2, %{
-          "objects" => [],
-          "materials" => [],
-          "dependencies" => []
-        }},
-        {&Planning.plan_animation/2, %{
-          "animations" => [],
-          "constraints" => [],
-          "total_frames" => 250
-        }}
+        {&Planning.plan_scene_construction/2,
+         %{
+           "initial_state" => %{},
+           "goal_state" => %{"objects" => []},
+           "constraints" => []
+         }},
+        {&Planning.plan_material_application/2,
+         %{
+           "objects" => [],
+           "materials" => [],
+           "dependencies" => []
+         }},
+        {&Planning.plan_animation/2,
+         %{
+           "animations" => [],
+           "constraints" => [],
+           "total_frames" => 250
+         }}
       ]
 
       Enum.each(test_cases, fn {fun, spec} ->
         result = fun.(spec, @temp_dir)
         assert {:ok, json} = result
-        
+
         # Verify it's valid JSON
         {:ok, _decoded} = Jason.decode(json)
       end)
     end
   end
 end
-

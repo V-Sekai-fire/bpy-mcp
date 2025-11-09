@@ -16,9 +16,18 @@ defmodule AriaForge.BMesh.Mock do
       "meshes" => [
         %{
           "name" => "MockCube",
-          "vertices" => [[-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1], [-1,-1,1], [1,-1,1], [1,1,1], [-1,1,1]],
-          "edges" => [[0,1], [1,2], [2,3], [3,0], [4,5], [5,6], [6,7], [7,4], [0,4], [1,5], [2,6], [3,7]],
-          "faces" => [[0,1,2,3], [4,7,6,5], [0,3,7,4], [1,5,6,2], [0,4,5,1], [3,2,6,7]],
+          "vertices" => [
+            [-1, -1, -1],
+            [1, -1, -1],
+            [1, 1, -1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [1, -1, 1],
+            [1, 1, 1],
+            [-1, 1, 1]
+          ],
+          "edges" => [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]],
+          "faces" => [[0, 1, 2, 3], [4, 7, 6, 5], [0, 3, 7, 4], [1, 5, 6, 2], [0, 4, 5, 1], [3, 2, 6, 7]],
           "loops" => [
             %{"vertex" => 0, "edge" => 0, "face" => 0},
             %{"vertex" => 1, "edge" => 1, "face" => 0},
@@ -45,15 +54,49 @@ defmodule AriaForge.BMesh.Mock do
             %{"vertex" => 6, "edge" => 6, "face" => 5},
             %{"vertex" => 7, "edge" => 7, "face" => 5}
           ],
-          "vertex_normals" => [[0.0, 0.0, -1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]],
-          "face_normals" => [[0.0, 0.0, -1.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]],
+          "vertex_normals" => [
+            [0.0, 0.0, -1.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0]
+          ],
+          "face_normals" => [
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, -1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0]
+          ],
           "custom_normals" => [
-            [0.0, 0.0, -1.0], [0.0, 0.0, -1.0], [0.0, 0.0, -1.0], [0.0, 0.0, -1.0],
-            [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
-            [0.0, -1.0, 0.0], [0.0, -1.0, 0.0], [0.0, -1.0, 0.0], [0.0, -1.0, 0.0],
-            [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0],
-            [-1.0, 0.0, 0.0], [-1.0, 0.0, 0.0], [-1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, -1.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [-1.0, 0.0, 0.0]
           ],
           "crease_edges" => [],
           "sharp_edges" => [],
@@ -80,34 +123,202 @@ defmodule AriaForge.BMesh.Mock do
   def export_gltf_scene do
     # Create mock vertex data (cube vertices)
     vertices = [
-      -1.0, -1.0, -1.0,  # 0
-       1.0, -1.0, -1.0,  # 1
-       1.0,  1.0, -1.0,  # 2
-      -1.0,  1.0, -1.0,  # 3
-      -1.0, -1.0,  1.0,  # 4
-       1.0, -1.0,  1.0,  # 5
-       1.0,  1.0,  1.0,  # 6
-      -1.0,  1.0,  1.0   # 7
+      # 0
+      -1.0,
+      -1.0,
+      -1.0,
+      # 1
+      1.0,
+      -1.0,
+      -1.0,
+      # 2
+      1.0,
+      1.0,
+      -1.0,
+      # 3
+      -1.0,
+      1.0,
+      -1.0,
+      # 4
+      -1.0,
+      -1.0,
+      1.0,
+      # 5
+      1.0,
+      -1.0,
+      1.0,
+      # 6
+      1.0,
+      1.0,
+      1.0,
+      # 7
+      -1.0,
+      1.0,
+      1.0
     ]
 
     # Create mock indices (triangulated cube faces)
     indices = [
-      0, 1, 2, 0, 2, 3,  # front
-      1, 5, 6, 1, 6, 2,  # right
-      5, 4, 7, 5, 7, 6,  # back
-      4, 0, 3, 4, 3, 7,  # left
-      3, 2, 6, 3, 6, 7,  # top
-      4, 5, 1, 4, 1, 0   # bottom
+      # front
+      0,
+      1,
+      2,
+      0,
+      2,
+      3,
+      # right
+      1,
+      5,
+      6,
+      1,
+      6,
+      2,
+      # back
+      5,
+      4,
+      7,
+      5,
+      7,
+      6,
+      # left
+      4,
+      0,
+      3,
+      4,
+      3,
+      7,
+      # top
+      3,
+      2,
+      6,
+      3,
+      6,
+      7,
+      # bottom
+      4,
+      5,
+      1,
+      4,
+      1,
+      0
     ]
 
     # Create mock normals
     normals = [
-      0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0,  # front
-      1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0,  # right
-      0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0,  # back
-     -1.0, 0.0,  0.0,-1.0, 0.0,  0.0,-1.0, 0.0,  0.0,-1.0, 0.0,  0.0,-1.0, 0.0,  0.0,-1.0, 0.0,  0.0,  # left
-      0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0,  # top
-      0.0,-1.0,  0.0, 0.0,-1.0,  0.0, 0.0,-1.0,  0.0, 0.0,-1.0, 0.0, 0.0,-1.0,  0.0, 0.0,-1.0,  0.0   # bottom
+      # front
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      # right
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      # back
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      # left
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      # top
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      # bottom
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0
     ]
 
     # EXT_mesh_bmesh data - following proper specification with accessor indices
@@ -141,20 +352,44 @@ defmodule AriaForge.BMesh.Mock do
     normal_data = normals |> Enum.map(&<<&1::float-32-little>>) |> :erlang.list_to_binary() |> Base.encode64()
 
     # EXT_mesh_bmesh buffers
-    bmesh_positions_data = bmesh_positions |> Enum.map(&<<&1::float-32-little>>) |> :erlang.list_to_binary() |> Base.encode64()
-    bmesh_edges_data = bmesh_edges |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    bmesh_edge_faces_data = bmesh_edge_faces |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_vertex_data = topology_vertex |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_edge_data = topology_edge |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_face_data = topology_face |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_next_data = topology_next |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_prev_data = topology_prev |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_radial_next_data = topology_radial_next |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    topology_radial_prev_data = topology_radial_prev |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    face_vertices_data = face_vertices |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+    bmesh_positions_data =
+      bmesh_positions |> Enum.map(&<<&1::float-32-little>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    bmesh_edges_data =
+      bmesh_edges |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    bmesh_edge_faces_data =
+      bmesh_edge_faces |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_vertex_data =
+      topology_vertex |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_edge_data =
+      topology_edge |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_face_data =
+      topology_face |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_next_data =
+      topology_next |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_prev_data =
+      topology_prev |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_radial_next_data =
+      topology_radial_next |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    topology_radial_prev_data =
+      topology_radial_prev |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    face_vertices_data =
+      face_vertices |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
+
     face_edges_data = face_edges |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
     face_loops_data = face_loops |> Enum.map(&<<&1::little-unsigned-16>>) |> :erlang.list_to_binary() |> Base.encode64()
-    face_offsets_data = face_offsets |> Enum.map(&<<&1::little-unsigned-32>>) |> :erlang.list_to_binary() |> Base.encode64()
+
+    face_offsets_data =
+      face_offsets |> Enum.map(&<<&1::little-unsigned-32>>) |> :erlang.list_to_binary() |> Base.encode64()
 
     {:ok,
      %{
@@ -187,38 +422,39 @@ defmodule AriaForge.BMesh.Mock do
                  "NORMAL" => 1
                },
                "indices" => 2,
-               "mode" => 4,  # TRIANGLES
+               # TRIANGLES
+               "mode" => 4,
                "extensions" => %{
                  "EXT_mesh_bmesh" => %{
                    "vertices" => %{
                      "count" => 8,
                      "attributes" => %{
                        "POSITION" => 3
-                    },
-                    "positions" => 3
+                     },
+                     "positions" => 3
                    },
                    "edges" => %{
                      "count" => 12,
-                    "faces" => 5,
-                    "offsets" => 16,
-                    "vertices" => 4
+                     "faces" => 5,
+                     "offsets" => 16,
+                     "vertices" => 4
                    },
                    "loops" => %{
                      "count" => 24,
-                    "topology_edge" => 7,
-                    "topology_face" => 8,
-                    "topology_next" => 9,
-                    "topology_prev" => 10,
-                    "topology_radial_next" => 11,
-                    "topology_radial_prev" => 12,
-                    "topology_vertex" => 6
+                     "topology_edge" => 7,
+                     "topology_face" => 8,
+                     "topology_next" => 9,
+                     "topology_prev" => 10,
+                     "topology_radial_next" => 11,
+                     "topology_radial_prev" => 12,
+                     "topology_vertex" => 6
                    },
                    "faces" => %{
                      "count" => 6,
-                    "edges" => 14,
-                    "loops" => 15,
-                    "offsets" => 16,
-                    "vertices" => 13
+                     "edges" => 14,
+                     "loops" => 15,
+                     "offsets" => 16,
+                     "vertices" => 13
                    }
                  }
                }
@@ -231,8 +467,10 @@ defmodule AriaForge.BMesh.Mock do
          %{
            "bufferView" => 0,
            "byteOffset" => 0,
-           "componentType" => 5126,  # FLOAT
-           "count" => 24,  # 8 vertices * 3 components
+           # FLOAT
+           "componentType" => 5126,
+           # 8 vertices * 3 components
+           "count" => 24,
            "type" => "VEC3",
            "min" => [-1.0, -1.0, -1.0],
            "max" => [1.0, 1.0, 1.0]
@@ -240,15 +478,19 @@ defmodule AriaForge.BMesh.Mock do
          %{
            "bufferView" => 1,
            "byteOffset" => 0,
-           "componentType" => 5126,  # FLOAT
-           "count" => 36,  # 12 triangles * 3 vertices * 3 components
+           # FLOAT
+           "componentType" => 5126,
+           # 12 triangles * 3 vertices * 3 components
+           "count" => 36,
            "type" => "VEC3"
          },
          %{
            "bufferView" => 2,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 36,  # 12 triangles * 3 vertices
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 12 triangles * 3 vertices
+           "count" => 36,
            "type" => "SCALAR",
            "min" => [0],
            "max" => [7]
@@ -257,99 +499,127 @@ defmodule AriaForge.BMesh.Mock do
          %{
            "bufferView" => 3,
            "byteOffset" => 0,
-           "componentType" => 5126,  # FLOAT
-           "count" => 8,  # 8 vertices
+           # FLOAT
+           "componentType" => 5126,
+           # 8 vertices
+           "count" => 8,
            "type" => "VEC3"
          },
          %{
            "bufferView" => 4,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 12 edges * 2 vertices
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 12 edges * 2 vertices
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 5,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 12 edges * 2 faces (some may be -1)
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 12 edges * 2 faces (some may be -1)
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 6,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 7,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 8,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 9,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 10,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 11,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 12,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # 24 loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # 24 loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 13,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # face vertices
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # face vertices
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 14,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # face edges
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # face edges
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 15,
            "byteOffset" => 0,
-           "componentType" => 5123,  # UNSIGNED_SHORT
-           "count" => 24,  # face loops
+           # UNSIGNED_SHORT
+           "componentType" => 5123,
+           # face loops
+           "count" => 24,
            "type" => "SCALAR"
          },
          %{
            "bufferView" => 16,
            "byteOffset" => 0,
-           "componentType" => 5125,  # UNSIGNED_INT
-           "count" => 7,  # face offsets
+           # UNSIGNED_INT
+           "componentType" => 5125,
+           # face offsets
+           "count" => 7,
            "type" => "SCALAR"
          }
        ],
@@ -358,104 +628,124 @@ defmodule AriaForge.BMesh.Mock do
          %{
            "buffer" => 0,
            "byteOffset" => 0,
-           "byteLength" => 96,  # 8 vertices * 3 floats * 4 bytes
-           "target" => 34962  # ARRAY_BUFFER
+           # 8 vertices * 3 floats * 4 bytes
+           "byteLength" => 96,
+           # ARRAY_BUFFER
+           "target" => 34962
          },
          %{
            "buffer" => 1,
            "byteOffset" => 0,
-           "byteLength" => 432,  # 36 floats * 4 bytes * 3 components
-           "target" => 34962  # ARRAY_BUFFER
+           # 36 floats * 4 bytes * 3 components
+           "byteLength" => 432,
+           # ARRAY_BUFFER
+           "target" => 34962
          },
          %{
            "buffer" => 2,
            "byteOffset" => 0,
-           "byteLength" => 72,  # 36 indices * 2 bytes
-           "target" => 34963  # ELEMENT_ARRAY_BUFFER
+           # 36 indices * 2 bytes
+           "byteLength" => 72,
+           # ELEMENT_ARRAY_BUFFER
+           "target" => 34963
          },
          # EXT_mesh_bmesh buffer views
          %{
            "buffer" => 3,
            "byteOffset" => 0,
-           "byteLength" => 96,  # 8 vertices * 3 floats * 4 bytes
+           # 8 vertices * 3 floats * 4 bytes
+           "byteLength" => 96,
            "target" => 34962
          },
          %{
            "buffer" => 4,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 edge vertices * 2 bytes
+           # 24 edge vertices * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 5,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 edge faces * 2 bytes
+           # 24 edge faces * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 6,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_vertex * 2 bytes
+           # 24 topology_vertex * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 7,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_edge * 2 bytes
+           # 24 topology_edge * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 8,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_face * 2 bytes
+           # 24 topology_face * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 9,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_next * 2 bytes
+           # 24 topology_next * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 10,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_prev * 2 bytes
+           # 24 topology_prev * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 11,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_radial_next * 2 bytes
+           # 24 topology_radial_next * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 12,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 topology_radial_prev * 2 bytes
+           # 24 topology_radial_prev * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 13,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 face_vertices * 2 bytes
+           # 24 face_vertices * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 14,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 face_edges * 2 bytes
+           # 24 face_edges * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 15,
            "byteOffset" => 0,
-           "byteLength" => 48,  # 24 face_loops * 2 bytes
+           # 24 face_loops * 2 bytes
+           "byteLength" => 48,
            "target" => 34962
          },
          %{
            "buffer" => 16,
            "byteOffset" => 0,
-           "byteLength" => 28,  # 7 face_offsets * 4 bytes
+           # 7 face_offsets * 4 bytes
+           "byteLength" => 28,
            "target" => 34962
          }
        ],
@@ -550,22 +840,23 @@ defmodule AriaForge.BMesh.Mock do
         _buffers = gltf_data["buffers"] || []
         imported_meshes = []
 
-        imported_meshes = Enum.reduce(meshes, imported_meshes, fn mesh, acc ->
-          name = mesh["name"] || "ImportedMesh"
-          primitives = mesh["primitives"] || []
+        imported_meshes =
+          Enum.reduce(meshes, imported_meshes, fn mesh, acc ->
+            name = mesh["name"] || "ImportedMesh"
+            primitives = mesh["primitives"] || []
 
-          Enum.reduce(primitives, acc, fn primitive, prim_acc ->
-            extensions = primitive["extensions"] || %{}
-            ext_bmesh = extensions["EXT_mesh_bmesh"]
+            Enum.reduce(primitives, acc, fn primitive, prim_acc ->
+              extensions = primitive["extensions"] || %{}
+              ext_bmesh = extensions["EXT_mesh_bmesh"]
 
-            if ext_bmesh do
-              # Count as imported even if reconstruction fails
-              [name | prim_acc]
-            else
-              prim_acc
-            end
+              if ext_bmesh do
+                # Count as imported even if reconstruction fails
+                [name | prim_acc]
+              else
+                prim_acc
+              end
+            end)
           end)
-        end)
 
         {:ok, "Imported #{length(imported_meshes)} meshes with BMesh topology"}
 

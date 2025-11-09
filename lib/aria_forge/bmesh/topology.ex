@@ -11,43 +11,45 @@ defmodule AriaForge.BMesh.Topology do
   """
   @spec process_bmesh_data(map(), map()) :: map()
   def process_bmesh_data(raw_data, opts) do
-    meshes = Enum.map(raw_data["meshes"], fn mesh_data ->
-      # Preserve original BMesh topology (n-gons, loops, etc.)
-      original_topology = build_original_bmesh_topology(mesh_data)
+    meshes =
+      Enum.map(raw_data["meshes"], fn mesh_data ->
+        # Preserve original BMesh topology (n-gons, loops, etc.)
+        original_topology = build_original_bmesh_topology(mesh_data)
 
-      # Create triangulated version for rendering (following EXT_mesh_bmesh spec)
-      {triangles, triangle_normals, face_anchors} = AriaForge.BMesh.Triangulation.triangulate_faces_ext_bmesh(mesh_data)
+        # Create triangulated version for rendering (following EXT_mesh_bmesh spec)
+        {triangles, triangle_normals, face_anchors} =
+          AriaForge.BMesh.Triangulation.triangulate_faces_ext_bmesh(mesh_data)
 
-      # Build triangulated topology for rendering
-      triangulated_topology = build_triangulated_topology(mesh_data, triangles)
+        # Build triangulated topology for rendering
+        triangulated_topology = build_triangulated_topology(mesh_data, triangles)
 
-      # Apply any transformations
-      transformed_mesh = apply_mesh_transforms(mesh_data, opts)
+        # Apply any transformations
+        transformed_mesh = apply_mesh_transforms(mesh_data, opts)
 
-      %{
-        "name" => mesh_data["name"],
-        "vertices" => transformed_mesh["vertices"],
-        "vertex_normals" => transformed_mesh["vertex_normals"],
-        # Original BMesh topology (preserves n-gons)
-        "original_faces" => mesh_data["faces"],
-        "original_loops" => mesh_data["loops"],
-        "original_topology" => original_topology,
-        # Triangulated version for rendering
-        "triangles" => triangles,
-        "triangle_normals" => triangle_normals,
-        "face_anchors" => face_anchors,
-        "triangulated_topology" => triangulated_topology,
-        # Additional BMesh data
-        "custom_normals" => mesh_data["custom_normals"],
-        "crease_edges" => mesh_data["crease_edges"],
-        "sharp_edges" => mesh_data["sharp_edges"],
-        "face_materials" => mesh_data["face_materials"],
-        "face_smooth" => mesh_data["face_smooth"],
-        "materials" => mesh_data["materials"],
-        "uv_layers" => mesh_data["uv_layers"],
-        "vertex_colors" => mesh_data["vertex_colors"]
-      }
-    end)
+        %{
+          "name" => mesh_data["name"],
+          "vertices" => transformed_mesh["vertices"],
+          "vertex_normals" => transformed_mesh["vertex_normals"],
+          # Original BMesh topology (preserves n-gons)
+          "original_faces" => mesh_data["faces"],
+          "original_loops" => mesh_data["loops"],
+          "original_topology" => original_topology,
+          # Triangulated version for rendering
+          "triangles" => triangles,
+          "triangle_normals" => triangle_normals,
+          "face_anchors" => face_anchors,
+          "triangulated_topology" => triangulated_topology,
+          # Additional BMesh data
+          "custom_normals" => mesh_data["custom_normals"],
+          "crease_edges" => mesh_data["crease_edges"],
+          "sharp_edges" => mesh_data["sharp_edges"],
+          "face_materials" => mesh_data["face_materials"],
+          "face_smooth" => mesh_data["face_smooth"],
+          "materials" => mesh_data["materials"],
+          "uv_layers" => mesh_data["uv_layers"],
+          "vertex_colors" => mesh_data["vertex_colors"]
+        }
+      end)
 
     %{
       "metadata" => %{
@@ -71,20 +73,23 @@ defmodule AriaForge.BMesh.Topology do
     loops = mesh_data["loops"]
 
     # Build edge connectivity map
-    edge_map = Enum.reduce(Enum.with_index(edges), %{}, fn {[v1, v2], edge_idx}, acc ->
-      key = Enum.sort([v1, v2]) |> List.to_tuple()
-      Map.put(acc, key, edge_idx)
-    end)
+    edge_map =
+      Enum.reduce(Enum.with_index(edges), %{}, fn {[v1, v2], edge_idx}, acc ->
+        key = Enum.sort([v1, v2]) |> List.to_tuple()
+        Map.put(acc, key, edge_idx)
+      end)
 
     # Build face-to-edge connectivity
-    face_edges = Enum.map(faces, fn face ->
-      for i <- 0..(length(face) - 1) do
-        v1 = Enum.at(face, i)
-        v2 = Enum.at(face, rem(i + 1, length(face)))
-        key = Enum.sort([v1, v2]) |> List.to_tuple()
-        Map.get(edge_map, key, -1)  # -1 for missing edges
-      end
-    end)
+    face_edges =
+      Enum.map(faces, fn face ->
+        for i <- 0..(length(face) - 1) do
+          v1 = Enum.at(face, i)
+          v2 = Enum.at(face, rem(i + 1, length(face)))
+          key = Enum.sort([v1, v2]) |> List.to_tuple()
+          # -1 for missing edges
+          Map.get(edge_map, key, -1)
+        end
+      end)
 
     # Build loop topology from extracted loops
     loop_topology = build_loop_topology_from_loops(loops, faces)
@@ -118,23 +123,26 @@ defmodule AriaForge.BMesh.Topology do
     edges = mesh_data["edges"]
 
     # Build face connectivity for edges as a list indexed by edge position
-    edge_faces_map = Enum.reduce(Enum.with_index(triangles), %{}, fn {face, face_idx}, acc ->
-      face_edges = for i <- 0..2 do
-        v1 = Enum.at(face, i)
-        v2 = Enum.at(face, rem(i + 1, 3))
-        Enum.sort([v1, v2])
-      end
+    edge_faces_map =
+      Enum.reduce(Enum.with_index(triangles), %{}, fn {face, face_idx}, acc ->
+        face_edges =
+          for i <- 0..2 do
+            v1 = Enum.at(face, i)
+            v2 = Enum.at(face, rem(i + 1, 3))
+            Enum.sort([v1, v2])
+          end
 
-      Enum.reduce(face_edges, acc, fn edge_key, face_acc ->
-        Map.update(face_acc, edge_key, [face_idx], &[face_idx | &1])
+        Enum.reduce(face_edges, acc, fn edge_key, face_acc ->
+          Map.update(face_acc, edge_key, [face_idx], &[face_idx | &1])
+        end)
       end)
-    end)
 
     # Convert to list indexed by edge index
-    edge_faces = Enum.map(edges, fn [v1, v2] ->
-      edge_key = Enum.sort([v1, v2])
-      Map.get(edge_faces_map, edge_key, [])
-    end)
+    edge_faces =
+      Enum.map(edges, fn [v1, v2] ->
+        edge_key = Enum.sort([v1, v2])
+        Map.get(edge_faces_map, edge_key, [])
+      end)
 
     # Build loop topology (simplified)
     loops = build_loop_topology(triangles)
@@ -168,22 +176,25 @@ defmodule AriaForge.BMesh.Topology do
     loop_faces = Enum.map(loops, & &1["face"])
 
     # Build next/prev connectivity within each face
-    {loop_next, loop_prev} = Enum.reduce(Enum.with_index(faces), {[], []}, fn {_face, face_idx}, {next_acc, prev_acc} ->
-      face_start = Enum.at(face_loop_offsets, face_idx)
-      face_end = Enum.at(face_loop_offsets, face_idx + 1)
-      face_loop_count = face_end - face_start
+    {loop_next, loop_prev} =
+      Enum.reduce(Enum.with_index(faces), {[], []}, fn {_face, face_idx}, {next_acc, prev_acc} ->
+        face_start = Enum.at(face_loop_offsets, face_idx)
+        face_end = Enum.at(face_loop_offsets, face_idx + 1)
+        face_loop_count = face_end - face_start
 
-      # Build next/prev for this face's loops
-      face_next = for i <- 0..(face_loop_count - 1) do
-        face_start + rem(i + 1, face_loop_count)
-      end
+        # Build next/prev for this face's loops
+        face_next =
+          for i <- 0..(face_loop_count - 1) do
+            face_start + rem(i + 1, face_loop_count)
+          end
 
-      face_prev = for i <- 0..(face_loop_count - 1) do
-        face_start + rem(i - 1 + face_loop_count, face_loop_count)
-      end
+        face_prev =
+          for i <- 0..(face_loop_count - 1) do
+            face_start + rem(i - 1 + face_loop_count, face_loop_count)
+          end
 
-      {next_acc ++ face_next, prev_acc ++ face_prev}
-    end)
+        {next_acc ++ face_next, prev_acc ++ face_prev}
+      end)
 
     %{
       "count" => length(loops),
@@ -201,6 +212,7 @@ defmodule AriaForge.BMesh.Topology do
   @spec build_loop_topology(list()) :: map()
   def build_loop_topology(triangles) do
     loop_index = 0
+
     {loop_vertices, loop_edges, loop_faces, loop_next, loop_prev} =
       Enum.reduce(Enum.with_index(triangles), {[], [], [], [], []}, fn {face, face_idx}, acc ->
         {lverts, ledges, lfaces, lnext, lprev} = acc
@@ -209,18 +221,19 @@ defmodule AriaForge.BMesh.Topology do
         face_loop_count = length(face)
 
         # Build loops for this face
-        face_loops = for i <- 0..(face_loop_count - 1) do
-          vertex_idx = Enum.at(face, i)
-          edge_idx = find_edge_index(triangles, vertex_idx, Enum.at(face, rem(i + 1, face_loop_count)))
+        face_loops =
+          for i <- 0..(face_loop_count - 1) do
+            vertex_idx = Enum.at(face, i)
+            edge_idx = find_edge_index(triangles, vertex_idx, Enum.at(face, rem(i + 1, face_loop_count)))
 
-          %{
-            vertex: vertex_idx,
-            edge: edge_idx,
-            face: face_idx,
-            next: face_loop_start + rem(i + 1, face_loop_count),
-            prev: face_loop_start + rem(i - 1 + face_loop_count, face_loop_count)
-          }
-        end
+            %{
+              vertex: vertex_idx,
+              edge: edge_idx,
+              face: face_idx,
+              next: face_loop_start + rem(i + 1, face_loop_count),
+              prev: face_loop_start + rem(i - 1 + face_loop_count, face_loop_count)
+            }
+          end
 
         # Extract arrays
         new_lverts = lverts ++ Enum.map(face_loops, & &1.vertex)
@@ -263,16 +276,18 @@ defmodule AriaForge.BMesh.Topology do
     vertices = mesh_data["vertices"]
 
     # Apply scaling if requested
-    scaled_vertices = case opts["scale"] do
-      nil -> vertices
-      scale_factor -> Enum.map(vertices, fn [x, y, z] -> [x * scale_factor, y * scale_factor, z * scale_factor] end)
-    end
+    scaled_vertices =
+      case opts["scale"] do
+        nil -> vertices
+        scale_factor -> Enum.map(vertices, fn [x, y, z] -> [x * scale_factor, y * scale_factor, z * scale_factor] end)
+      end
 
     # Apply translation if requested
-    translated_vertices = case opts["translate"] do
-      nil -> scaled_vertices
-      [tx, ty, tz] -> Enum.map(scaled_vertices, fn [x, y, z] -> [x + tx, y + ty, z + tz] end)
-    end
+    translated_vertices =
+      case opts["translate"] do
+        nil -> scaled_vertices
+        [tx, ty, tz] -> Enum.map(scaled_vertices, fn [x, y, z] -> [x + tx, y + ty, z + tz] end)
+      end
 
     %{mesh_data | "vertices" => translated_vertices}
   end

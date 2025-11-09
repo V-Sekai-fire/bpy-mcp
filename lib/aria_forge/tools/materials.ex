@@ -27,4 +27,3 @@ defmodule AriaForge.Tools.Materials do
   def test_mock_set_material(object_name, material_name, color),
     do: mock_set_material(object_name, material_name, color)
 end
-

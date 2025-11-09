@@ -116,7 +116,8 @@ defmodule AriaForge.BMesh.Binary do
     buffer = Enum.at(buffers, buffer_idx)
 
     # Decode base64 data
-    {:ok, binary_data} = Base.decode64(buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+    {:ok, binary_data} =
+      Base.decode64(buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
 
     # Extract vertex positions (VEC3 of floats)
     count = accessor["count"]
@@ -124,7 +125,7 @@ defmodule AriaForge.BMesh.Binary do
 
     for i <- 0..(count - 1) do
       # Each vertex is 3 floats (12 bytes)
-      vertex_offset = byte_offset + (i * 12)
+      vertex_offset = byte_offset + i * 12
       <<x::float-32-little, y::float-32-little, z::float-32-little>> = binary_part(binary_data, vertex_offset, 12)
       [x, y, z]
     end
@@ -147,14 +148,15 @@ defmodule AriaForge.BMesh.Binary do
     buffer = Enum.at(buffers, buffer_idx)
 
     # Decode base64 data
-    {:ok, binary_data} = Base.decode64(buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+    {:ok, binary_data} =
+      Base.decode64(buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
 
     # Extract edge vertex pairs (pairs of unsigned shorts)
     byte_offset = buffer_view["byteOffset"] + accessor["byteOffset"]
 
     for i <- 0..(count - 1) do
       # Each edge is 2 unsigned shorts (4 bytes)
-      edge_offset = byte_offset + (i * 4)
+      edge_offset = byte_offset + i * 4
       <<v1::little-unsigned-16, v2::little-unsigned-16>> = binary_part(binary_data, edge_offset, 4)
       [v1, v2]
     end
@@ -185,19 +187,24 @@ defmodule AriaForge.BMesh.Binary do
     offsets_buffer = Enum.at(buffers, offsets_buffer_idx)
 
     # Decode vertices data
-    {:ok, vertices_binary} = Base.decode64(vertices_buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+    {:ok, vertices_binary} =
+      Base.decode64(vertices_buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+
     vertices_byte_offset = vertices_buffer_view["byteOffset"] + vertices_accessor["byteOffset"]
 
     # Decode offsets data
-    {:ok, offsets_binary} = Base.decode64(offsets_buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+    {:ok, offsets_binary} =
+      Base.decode64(offsets_buffer["uri"] |> String.replace_prefix("data:application/octet-stream;base64,", ""))
+
     offsets_byte_offset = offsets_buffer_view["byteOffset"] + offsets_accessor["byteOffset"]
 
     # Extract face offsets
-    face_offsets = for i <- 0..count do
-      offset_pos = offsets_byte_offset + (i * 4)
-      <<offset::little-unsigned-32>> = binary_part(offsets_binary, offset_pos, 4)
-      offset
-    end
+    face_offsets =
+      for i <- 0..count do
+        offset_pos = offsets_byte_offset + i * 4
+        <<offset::little-unsigned-32>> = binary_part(offsets_binary, offset_pos, 4)
+        offset
+      end
 
     # Extract faces using offsets
     for i <- 0..(count - 1) do
@@ -206,7 +213,7 @@ defmodule AriaForge.BMesh.Binary do
       face_size = end_idx - start_idx
 
       for j <- 0..(face_size - 1) do
-        vertex_pos = vertices_byte_offset + ((start_idx + j) * 2)
+        vertex_pos = vertices_byte_offset + (start_idx + j) * 2
         <<vertex_idx::little-unsigned-16>> = binary_part(vertices_binary, vertex_pos, 2)
         vertex_idx
       end
