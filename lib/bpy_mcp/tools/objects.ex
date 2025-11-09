@@ -19,7 +19,7 @@ defmodule BpyMcp.Tools.Objects do
     create_cube_bpy(name, location, size, temp_dir)
   end
 
-  defp create_cube_bpy(name, location, size, _temp_dir) do
+  defp create_cube_bpy(name, location, size, temp_dir) do
     try do
       [x, y, z] = location
 
@@ -54,7 +54,7 @@ defmodule BpyMcp.Tools.Objects do
       result = f"Created cube '{name}' at [{x}, {y}, {z}] with size {size}"
       """
 
-      result = Pythonx.eval(code, %{"working_directory" => _temp_dir})
+      result = Pythonx.eval(code, %{"working_directory" => temp_dir})
       {:ok, result}
     rescue
       e ->
@@ -71,7 +71,7 @@ defmodule BpyMcp.Tools.Objects do
     create_sphere_bpy(name, location, radius, temp_dir)
   end
 
-  defp create_sphere_bpy(name, location, radius, _temp_dir) do
+  defp create_sphere_bpy(name, location, radius, temp_dir) do
     try do
       [x, y, z] = location
 
@@ -106,7 +106,7 @@ defmodule BpyMcp.Tools.Objects do
       result = f"Created sphere '{name}' at [{x}, {y}, {z}] with radius {radius}"
       """
 
-      result = Pythonx.eval(code, %{"working_directory" => _temp_dir})
+      result = Pythonx.eval(code, %{"working_directory" => temp_dir})
       {:ok, result}
     rescue
       e ->

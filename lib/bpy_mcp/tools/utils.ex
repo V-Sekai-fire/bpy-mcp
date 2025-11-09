@@ -40,7 +40,7 @@ defmodule BpyMcp.Tools.Utils do
       bpy.context.scene.render.fps_base = 1.0
       """
 
-      Pythonx.exec(code)
+      _ = Pythonx.eval(code, %{})
       :ok
     rescue
       _ -> :ok

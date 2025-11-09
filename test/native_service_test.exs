@@ -34,35 +34,4 @@ defmodule BpyMcp.NativeServiceTest do
       assert {:error, "Tool not found: ", ^state} = result
     end
   end
-
-  describe "tool definitions exist" do
-    test "bpy_create_cube tool is defined" do
-      # This tests that the tool definition exists in the module
-      # We can't easily test the actual tool calling without setup
-      assert NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-
-    test "bpy_create_sphere tool is defined" do
-      assert NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-
-    test "bpy_set_material tool is defined" do
-      assert NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-
-    test "bpy_render_image tool is defined" do
-      assert NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-
-    test "bpy_get_scene_info tool is defined" do
-      assert NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-  end
-
-  describe "server metadata" do
-    test "server has correct name and version" do
-      # Test that the server is properly configured with ExMCP.Server
-      assert BpyMcp.NativeService.__info__(:module) == BpyMcp.NativeService
-    end
-  end
 end

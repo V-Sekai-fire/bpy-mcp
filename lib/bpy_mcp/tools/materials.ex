@@ -19,7 +19,7 @@ defmodule BpyMcp.Tools.Materials do
     set_material_bpy(object_name, material_name, color, temp_dir)
   end
 
-  defp set_material_bpy(object_name, material_name, color, _temp_dir) do
+  defp set_material_bpy(object_name, material_name, color, temp_dir) do
     try do
       [r, g, b, a] = color
 
@@ -56,7 +56,7 @@ defmodule BpyMcp.Tools.Materials do
       result = f"Set material '{material_name}' with color [{r}, {g}, {b}, {a}] on object '{object_name}'"
       """
 
-      result = Pythonx.eval(code, %{"working_directory" => _temp_dir})
+      result = Pythonx.eval(code, %{"working_directory" => temp_dir})
       {:ok, result}
     rescue
       e ->

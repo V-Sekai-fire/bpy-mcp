@@ -6,8 +6,8 @@ defmodule BpyMcp.IntegrationTest do
   alias BpyMcp.{StdioServer, NativeService}
   alias BpyMcp.TestHelper
 
-  defp require_bpy(_context) do
-    TestHelper.setup_require_bpy(_context)
+  defp require_bpy(context) do
+    TestHelper.setup_require_bpy(context)
   end
 
   describe "Application startup" do

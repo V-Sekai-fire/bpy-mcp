@@ -19,7 +19,7 @@ defmodule BpyMcp.Tools.Rendering do
     render_image_bpy(filepath, resolution_x, resolution_y, temp_dir)
   end
 
-  defp render_image_bpy(filepath, resolution_x, resolution_y, _temp_dir) do
+  defp render_image_bpy(filepath, resolution_x, resolution_y, temp_dir) do
     try do
       code = """
       import bpy
@@ -45,7 +45,7 @@ defmodule BpyMcp.Tools.Rendering do
           result = f"Render completed but file not found at {filepath}"
       """
 
-      result = Pythonx.eval(code, %{"working_directory" => _temp_dir})
+      result = Pythonx.eval(code, %{"working_directory" => temp_dir})
       {:ok, result}
     rescue
       e ->
