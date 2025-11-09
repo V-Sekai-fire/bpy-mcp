@@ -1,5 +1,7 @@
 # BpyMcp
 
+[![smithery badge](https://smithery.ai/badge/@V-Sekai-fire/bpy-mcp)](https://smithery.ai/server/@V-Sekai-fire/bpy-mcp)
+
 A Model Context Protocol (MCP) server that provides Blender Python (bpy) tools for 3D modeling and rendering operations. This server allows MCP clients to interact with Blender through a standardized protocol, enabling programmatic control of 3D scenes, objects, materials, and rendering.
 
 ## Features
