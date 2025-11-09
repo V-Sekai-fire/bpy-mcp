@@ -155,8 +155,6 @@ defmodule AriaForge.ToolsTest do
     end
   end
 
-
-
   describe "mock functions" do
     test "test_mock_create_cube returns expected result" do
       result = Tools.test_mock_create_cube("TestCube", [1, 2, 3], 5.0)

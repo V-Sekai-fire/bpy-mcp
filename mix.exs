@@ -23,7 +23,17 @@ defmodule AriaForge.MixProject do
   def application do
     [
       mod: {AriaForge.Application, []},
-      applications: [:logger, :ex_mcp, :pythonx, :briefly, :macfly, :aria_storage, :aria_math, :aria_core, :aria_planner]
+      applications: [
+        :logger,
+        :ex_mcp,
+        :pythonx,
+        :briefly,
+        :macfly,
+        :aria_storage,
+        :aria_math,
+        :aria_core,
+        :aria_planner
+      ]
     ]
   end
 

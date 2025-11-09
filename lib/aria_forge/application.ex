@@ -55,30 +55,36 @@ defmodule AriaForge.Application do
 
     # Determine transport type from environment
     # Default to http if PORT is set (container deployment like Smithery), otherwise stdio
-    transport_type = 
+    transport_type =
       case System.get_env("MCP_TRANSPORT") do
-        "stdio" -> :stdio
-        "http" -> :http
-        "sse" -> :sse
+        "stdio" ->
+          :stdio
+
+        "http" ->
+          :http
+
+        "sse" ->
+          :sse
+
         _ ->
           # Default to http if PORT is set (Smithery deployment), otherwise stdio
           if System.get_env("PORT"), do: :http, else: :stdio
       end
-    
+
     # Configure for stdio mode when using stdio transport
     if transport_type == :stdio do
       # Logger is already set to emergency in vm.args/ELIXIR_ERL_OPTIONS
       # But configure it again here as a safeguard to ensure no warnings escape
       # This must be the FIRST thing we do to prevent any warnings
       Logger.configure(level: :emergency)
-      
+
       # Suppress all stdout output - critical for JSON-RPC over stdio
       # Redirect any potential stdout writes to stderr (though logger should handle this)
       Application.put_env(:ex_mcp, :stdio_mode, true)
       Application.put_env(:ex_mcp, :stdio_startup_delay, 10)
-      
+
       # Distributed Erlang is disabled for stdio mode, so no node name conflicts possible
-      
+
       # DO NOT output anything to stdout/stderr here - the MCP server handles initialization
       # Any output before ExMCP is ready will break the JSON-RPC protocol
     end
@@ -95,45 +101,49 @@ defmodule AriaForge.Application do
     children =
       if not is_release and Code.ensure_loaded?(Mix) and Mix.env() == :test do
         # In test, start with native transport
-        children ++ [
-          {AriaForge.NativeService, [transport: :native, name: AriaForge.NativeService]}
-        ]
+        children ++
+          [
+            {AriaForge.NativeService, [transport: :native, name: AriaForge.NativeService]}
+          ]
       else
         # For stdio transport, no port needed
         server_opts = [
           transport: transport_type,
           name: AriaForge.NativeService
         ]
-        
+
         # Add port and host only for HTTP transport
         server_opts =
           if transport_type == :http do
-            port = 
+            port =
               case System.get_env("PORT") do
                 nil -> 4000
                 port_str -> String.to_integer(port_str)
               end
-            
+
             # Use 0.0.0.0 for Docker/container deployments to accept external connections
             # Use localhost for local development
-            host = 
+            host =
               case System.get_env("HOST") do
                 nil ->
                   # Default to 0.0.0.0 if PORT is set (container deployment), otherwise localhost
                   if System.get_env("PORT"), do: "0.0.0.0", else: "localhost"
-                host -> host
+
+                host ->
+                  host
               end
-            
+
             server_opts
             |> Keyword.put(:port, port)
             |> Keyword.put(:host, host)
           else
             server_opts
           end
-        
-        children ++ [
-          {AriaForge.NativeService, server_opts}
-        ]
+
+        children ++
+          [
+            {AriaForge.NativeService, server_opts}
+          ]
       end
 
     opts = [strategy: :one_for_one, name: AriaForge.Supervisor]

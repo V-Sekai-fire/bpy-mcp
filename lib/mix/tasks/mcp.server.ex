@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Mcp.Server do
     {opts, _} = OptionParser.parse!(args, strict: [port: :integer, transport: :string])
 
     # Determine transport type
-    transport = 
+    transport =
       case Keyword.get(opts, :transport) || System.get_env("MCP_TRANSPORT", "http") do
         "stdio" -> :stdio
         "sse" -> :sse
@@ -54,9 +54,11 @@ defmodule Mix.Tasks.Mcp.Server do
       _ ->
         IO.puts("🚀 aria-forge #{transport} server started on port #{port}")
         IO.puts("📡 MCP endpoint: http://localhost:#{port}")
+
         if transport == :sse do
           IO.puts("📡 SSE endpoint: http://localhost:#{port}/sse")
         end
+
         IO.puts("💚 Health check: http://localhost:#{port}/health")
     end
 
