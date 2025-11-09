@@ -127,15 +127,5 @@ defmodule BpyMcp.McpProtocolTest do
 
   describe "Error Handling" do
     setup :require_bpy
-
-    test "missing required parameters for import_bmesh", %{} do
-      # import_bmesh requires gltf_data
-      args = %{}
-      state = %{}
-      result = BpyMcp.NativeService.handle_tool_call("import_bmesh", args, state)
-
-      # Should handle missing parameters gracefully - either error or ok response
-      assert match?({:error, _, _}, result) or match?({:ok, _, _}, result)
-    end
   end
 end

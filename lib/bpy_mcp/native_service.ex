@@ -120,10 +120,10 @@ defmodule BpyMcp.NativeService do
     })
   end
 
-  deftool "export_bmesh" do
+  deftool "export_mesh" do
     meta do
-      name("Export BMesh")
-      description("Export the current scene as BMesh data in EXT_mesh_bmesh format")
+      name("Export Mesh")
+      description("Export mesh data in OpenMesh internal format")
     end
 
     input_schema(%{
@@ -141,33 +141,10 @@ defmodule BpyMcp.NativeService do
     })
   end
 
-  deftool "import_bmesh" do
-    meta do
-      name("Import BMesh")
-      description("Import BMesh data from glTF JSON with EXT_mesh_bmesh extension")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        gltf_data: %{type: "string", description: "glTF JSON data with EXT_mesh_bmesh extension to import"},
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["gltf_data"]
-    })
-  end
-
   deftool "introspect_blender" do
     meta do
       name("Introspect 3D API")
-      description("Introspect bpy/bmesh structure and methods for debugging and understanding API")
+      description("Introspect bpy structure and methods for debugging and understanding API")
     end
 
     input_schema(%{
@@ -175,8 +152,8 @@ defmodule BpyMcp.NativeService do
       properties: %{
         object_path: %{
           type: "string",
-          description: "Path to introspect (e.g., 'bmesh', 'bmesh.ops')",
-          default: "bmesh"
+          description: "Path to introspect (e.g., 'bpy', 'bpy.data')",
+          default: "bpy"
         },
         context_token: %{
           type: "string",
@@ -454,24 +431,10 @@ defmodule BpyMcp.NativeService do
   end
 
   @impl true
-  def handle_tool_call("export_bmesh", args, state) do
+  def handle_tool_call("export_mesh", args, state) do
     with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, bmesh_data} <- BpyMcp.Mesh.export_bmesh_scene(temp_dir) do
-      # Format as JSON string for better readability
-      json_text = Jason.encode!(bmesh_data, pretty: true)
-      {:ok, %{content: [%{"type" => "text", "text" => json_text}]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("import_bmesh", args, state) do
-    gltf_data = Map.get(args, "gltf_data", "")
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Mesh.import_bmesh_scene(gltf_data, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Result: #{result}")]}, state}
+         {:ok, json_data} <- BpyMcp.Mesh.Export.export_openmesh(temp_dir) do
+      {:ok, %{content: [%{"type" => "text", "text" => json_data}]}, state}
     else
       {:error, reason} -> {:error, reason, state}
     end
@@ -479,7 +442,7 @@ defmodule BpyMcp.NativeService do
 
   @impl true
   def handle_tool_call("introspect_blender", args, state) do
-    object_path = Map.get(args, "object_path", "bmesh")
+    object_path = Map.get(args, "object_path", "bpy")
 
     with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
          {:ok, result} <- BpyMcp.Tools.introspect_blender(object_path, temp_dir) do

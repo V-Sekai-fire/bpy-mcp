@@ -75,10 +75,10 @@ defmodule BpyMcp.Tools do
 
   # Introspection functions
   @doc """
-  Introspects bpy/bmesh structure for debugging and understanding API.
+  Introspects bpy structure for debugging and understanding API.
   """
   @spec introspect_blender(String.t(), String.t()) :: result()
-  defdelegate introspect_blender(object_path \\ "bmesh", temp_dir), to: Introspection
+  defdelegate introspect_blender(object_path \\ "bpy", temp_dir), to: Introspection
 
   @doc """
   Introspects any Python object/API structure for debugging and understanding Python APIs.

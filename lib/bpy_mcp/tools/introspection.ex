@@ -15,7 +15,7 @@ defmodule BpyMcp.Tools.Introspection do
   Metadata only - no property access, no side effects.
   """
   @spec introspect_blender(String.t(), String.t()) :: result()
-  def introspect_blender(object_path \\ "bmesh", temp_dir) do
+  def introspect_blender(object_path \\ "bpy", temp_dir) do
     :ok = Utils.ensure_pythonx()
     introspect_blender_bpy(object_path, temp_dir)
   end

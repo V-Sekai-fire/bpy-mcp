@@ -25,31 +25,15 @@ defmodule BpyMcp.Tools.Objects do
 
       code = """
       import bpy
-      import bmesh
 
       # Clear existing mesh if it exists
       if "#{name}" in bpy.data.objects:
           bpy.data.objects.remove(bpy.data.objects["#{name}"], do_unlink=True)
 
-      # Create new mesh
-      mesh = bpy.data.meshes.new(name="#{name}")
-      obj = bpy.data.objects.new("#{name}", mesh)
-
-      # Link to scene
-      bpy.context.collection.objects.link(obj)
-
-      # Create cube using bmesh
-      bm = bmesh.new()
-      bmesh.ops.create_cube(bm, size=#{size})
-      bm.to_mesh(mesh)
-      bm.free()
-
-      # Set location
-      obj.location = (#{x}, #{y}, #{z})
-
-      # Make active
-      bpy.context.view_layer.objects.active = obj
-      obj.select_set(True)
+      # Create cube using bpy primitives
+      bpy.ops.mesh.primitive_cube_add(size=#{size}, location=(#{x}, #{y}, #{z}))
+      obj = bpy.context.active_object
+      obj.name = "#{name}"
 
       result = f"Created cube '{name}' at [{x}, {y}, {z}] with size {size}"
       """
@@ -77,31 +61,15 @@ defmodule BpyMcp.Tools.Objects do
 
       code = """
       import bpy
-      import bmesh
 
       # Clear existing mesh if it exists
       if "#{name}" in bpy.data.objects:
           bpy.data.objects.remove(bpy.data.objects["#{name}"], do_unlink=True)
 
-      # Create new mesh
-      mesh = bpy.data.meshes.new(name="#{name}")
-      obj = bpy.data.objects.new("#{name}", mesh)
-
-      # Link to scene
-      bpy.context.collection.objects.link(obj)
-
-      # Create sphere using bmesh
-      bm = bmesh.new()
-      bmesh.ops.create_icosphere(bm, subdivisions=2, radius=#{radius})
-      bm.to_mesh(mesh)
-      bm.free()
-
-      # Set location
-      obj.location = (#{x}, #{y}, #{z})
-
-      # Make active
-      bpy.context.view_layer.objects.active = obj
-      obj.select_set(True)
+      # Create sphere using bpy primitives
+      bpy.ops.mesh.primitive_uv_sphere_add(radius=#{radius}, location=(#{x}, #{y}, #{z}))
+      obj = bpy.context.active_object
+      obj.name = "#{name}"
 
       result = f"Created sphere '{name}' at [{x}, {y}, {z}] with radius {radius}"
       """
