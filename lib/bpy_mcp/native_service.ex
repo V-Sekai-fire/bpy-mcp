@@ -120,6 +120,37 @@ defmodule BpyMcp.NativeService do
     })
   end
 
+  deftool "render_image" do
+    meta do
+      name("Render Image")
+      description("Render the current scene to an image and return the image data (max 512x512)")
+    end
+
+    input_schema(%{
+      type: "object",
+      properties: %{
+        resolution_x: %{
+          type: "number",
+          description: "Render width in pixels (max 512)",
+          default: 512
+        },
+        resolution_y: %{
+          type: "number",
+          description: "Render height in pixels (max 512)",
+          default: 512
+        },
+        context_token: %{
+          type: "string",
+          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
+        },
+        scene_id: %{
+          type: "string",
+          description: "Optional scene ID. If not provided, uses default scene."
+        }
+      }
+    })
+  end
+
   deftool "export_mesh" do
     meta do
       name("Export Mesh")
@@ -451,6 +482,32 @@ defmodule BpyMcp.NativeService do
     with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
          {:ok, info} <- BpyMcp.Tools.get_scene_info(temp_dir) do
       {:ok, %{content: [Helpers.text_content("Scene info: #{inspect(info)}")]}, state}
+    else
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  @impl true
+  def handle_tool_call("render_image", args, state) do
+    # Generate temp filepath
+    temp_file = Briefly.create!(ext: ".png")
+    resolution_x = min(Map.get(args, "resolution_x", 512), 512)
+    resolution_y = min(Map.get(args, "resolution_y", 512), 512)
+
+    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
+         {:ok, result} <- BpyMcp.Tools.render_image(temp_file, resolution_x, resolution_y, temp_dir) do
+      # Return image as embedded markdown URI
+      image_data = Map.get(result, "data", "")
+      markdown_uri = "![Rendered image at #{resolution_x}x#{resolution_y}](data:image/png;base64,#{image_data})"
+
+      content = [
+        %{
+          "type" => "text",
+          "text" => markdown_uri
+        }
+      ]
+
+      {:ok, %{content: content}, state}
     else
       {:error, reason} -> {:error, reason, state}
     end
