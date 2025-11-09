@@ -4,6 +4,11 @@
 defmodule BpyMcp.McpStdioIntegrationTest do
   use ExUnit.Case, async: false
   alias BpyMcp.NativeService
+  alias BpyMcp.TestHelper
+
+  defp require_bpy(_context) do
+    TestHelper.setup_require_bpy(_context)
+  end
 
   @moduledoc """
   Integration tests for MCP stdio transport using JSON-RPC protocol.
@@ -112,6 +117,8 @@ defmodule BpyMcp.McpStdioIntegrationTest do
   end
 
   describe "MCP Tools Call" do
+    setup :require_bpy
+
     test "reset_scene tool call", %{} do
       args = %{}
       state = %{}
@@ -185,6 +192,8 @@ defmodule BpyMcp.McpStdioIntegrationTest do
   end
 
   describe "MCP Protocol Compliance" do
+    setup :require_bpy
+
     test "tool responses have correct structure", %{} do
       tools = ["reset_scene", "create_cube", "get_scene_info"]
 
@@ -207,6 +216,8 @@ defmodule BpyMcp.McpStdioIntegrationTest do
   end
 
   describe "Context Token Support" do
+    setup :require_bpy
+
     test "tools can use context_token parameter", %{} do
       # First reset to get a context
       reset_args = %{}
@@ -226,6 +237,8 @@ defmodule BpyMcp.McpStdioIntegrationTest do
   end
 
   describe "Complete MCP Workflow" do
+    setup :require_bpy
+
     test "full workflow: list tools -> call tools", %{} do
       # Step 1: List tools
       list_request = %{"method" => "tools/list"}

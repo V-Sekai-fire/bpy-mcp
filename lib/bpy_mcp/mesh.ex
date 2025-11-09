@@ -60,9 +60,6 @@ defmodule BpyMcp.Mesh do
   end
 
   @doc false
-  def test_mock_export_bmesh_scene(), do: BpyMcp.BMesh.Mock.export_gltf_scene()
-
-  @doc false
   def test_reconstruct_vertices_from_accessors(ext_bmesh, accessors, bufferViews, buffers) do
     BpyMcp.BMesh.Binary.reconstruct_vertices_from_accessors(ext_bmesh, accessors, bufferViews, buffers)
   end

@@ -4,6 +4,11 @@
 defmodule BpyMcp.IntegrationTest do
   use ExUnit.Case, async: false
   alias BpyMcp.{StdioServer, NativeService}
+  alias BpyMcp.TestHelper
+
+  defp require_bpy(_context) do
+    TestHelper.setup_require_bpy(_context)
+  end
 
   describe "Application startup" do
     test "application starts successfully" do
@@ -75,7 +80,9 @@ defmodule BpyMcp.IntegrationTest do
   end
 
   describe "end-to-end tool call flow" do
-    test "complete tool call cycle works" do
+    setup :require_bpy
+
+    test "complete tool call cycle works", %{} do
       # Test a complete tool call from invocation to response using individual tools
       tool_name = "create_cube"
 

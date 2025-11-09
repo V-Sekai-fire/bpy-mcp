@@ -15,11 +15,30 @@ defmodule BpyMcp.Tools.Scene do
   """
   @spec reset_scene(String.t()) :: result()
   def reset_scene(temp_dir) do
-    mock_reset_scene()
+    :ok = Utils.ensure_pythonx()
+    reset_scene_bpy(temp_dir)
   end
 
-  defp mock_reset_scene do
-    {:ok, "Reset scene - cleared all objects"}
+  defp reset_scene_bpy(_temp_dir) do
+    try do
+      code = """
+      import bpy
+
+      # Select all objects
+      bpy.ops.object.select_all(action='SELECT')
+
+      # Delete all selected objects
+      bpy.ops.object.delete(use_global=False)
+
+      result = "Reset scene - cleared all objects"
+      """
+
+      result = Pythonx.eval(code, %{})
+      {:ok, result}
+    rescue
+      e ->
+        {:error, "Failed to reset scene: #{inspect(e)}"}
+    end
   end
 
   @doc """
@@ -27,26 +46,39 @@ defmodule BpyMcp.Tools.Scene do
   """
   @spec get_scene_info(String.t()) :: result()
   def get_scene_info(temp_dir) do
-    mock_get_scene_info()
+    :ok = Utils.ensure_pythonx()
+    get_scene_info_bpy(temp_dir)
   end
 
-  defp mock_get_scene_info do
-    {:ok,
-     %{
-       "scene_name" => "Scene",
-       "frame_current" => 1,
-       "frame_start" => 1,
-       "frame_end" => 250,
-       "fps" => 30,
-       "fps_base" => 1,
-       "objects" => ["Cube", "Light", "Camera"],
-       "active_object" => "Cube"
-     }}
-  end
+  defp get_scene_info_bpy(_temp_dir) do
+    try do
+      code = """
+      import bpy
+      import json
 
-  # Test helper functions
-  @doc false
-  def test_mock_get_scene_info(), do: mock_get_scene_info()
-  @doc false
-  def test_mock_reset_scene(), do: mock_reset_scene()
+      scene = bpy.context.scene
+      objects = [obj.name for obj in scene.objects]
+      active_obj = scene.objects.active.name if scene.objects.active else None
+
+      info = {
+          "scene_name": scene.name,
+          "frame_current": scene.frame_current,
+          "frame_start": scene.frame_start,
+          "frame_end": scene.frame_end,
+          "fps": scene.render.fps,
+          "fps_base": scene.render.fps_base,
+          "objects": objects,
+          "active_object": active_obj
+      }
+
+      result = json.dumps(info)
+      """
+
+      result_json = Pythonx.eval(code, %{})
+      {:ok, Jason.decode!(result_json)}
+    rescue
+      e ->
+        {:error, "Failed to get scene info: #{inspect(e)}"}
+    end
+  end
 end

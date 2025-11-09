@@ -14,23 +14,36 @@ defmodule BpyMcp.BMesh.Export do
   Exports BMesh data as JSON using a simple DSL.
   """
   @spec export_json(String.t(), map()) :: export_result
-  def export_json(_temp_dir, opts \\ %{}) do
-    # Python/bpy removed - use mock implementation only
-    BpyMcp.BMesh.Mock.export_json(opts)
+  def export_json(temp_dir, opts \\ %{}) do
+    :ok = BpyMcp.BMesh.ensure_pythonx()
+    do_export_json(temp_dir, opts)
   end
 
   @doc """
   Exports the current scene as complete glTF 2.0 JSON with EXT_mesh_bmesh extension.
   """
   @spec export_gltf_scene(String.t()) :: BpyMcp.Mesh.result()
-  def export_gltf_scene(_temp_dir) do
-    # Python/bpy removed - use mock implementation only
-    BpyMcp.BMesh.Mock.export_gltf_scene()
+  def export_gltf_scene(temp_dir) do
+    :ok = BpyMcp.BMesh.ensure_pythonx()
+    do_export_gltf_scene(temp_dir)
   end
 
-  # Removed Python/bpy implementation - now uses mock only
-  # The following functions are kept for reference but not used
-  defp _unused_extract_raw_bmesh_data(_temp_dir) do
+  # JSON DSL Implementation - Extract raw data from Blender, process in Elixir
+  defp do_export_json(temp_dir, opts) do
+    # Extract raw data from Blender
+    case extract_raw_bmesh_data(temp_dir) do
+      {:ok, raw_data} ->
+        # Process in Elixir
+        processed_data = BpyMcp.BMesh.Topology.process_bmesh_data(raw_data, opts)
+        json_string = Jason.encode!(processed_data)
+        {:ok, json_string}
+
+      error ->
+        error
+    end
+  end
+
+  defp extract_raw_bmesh_data(temp_dir) do
     code = """
     import bpy
     import bmesh
@@ -121,7 +134,7 @@ defmodule BpyMcp.BMesh.Export do
     result
     """
 
-    case Pythonx.eval(code, %{"working_directory" => _temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}
@@ -136,7 +149,7 @@ defmodule BpyMcp.BMesh.Export do
       {:error, Exception.message(e)}
   end
 
-  defp _unused_do_export_gltf_scene(_temp_dir) do
+  defp do_export_gltf_scene(temp_dir) do
     code = """
     import bpy
     import bmesh
@@ -436,7 +449,7 @@ defmodule BpyMcp.BMesh.Export do
     result
     """
 
-    case Pythonx.eval(code, %{"working_directory" => _temp_dir}) do
+    case Pythonx.eval(code, %{"working_directory" => temp_dir}) do
       {result, _globals} ->
         case Pythonx.decode(result) do
           result when is_map(result) -> {:ok, result}

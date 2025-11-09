@@ -3,8 +3,15 @@
 
 defmodule BpyMcp.MeshTest do
   use ExUnit.Case, async: true
+  alias BpyMcp.TestHelper
+
+  defp require_bpy(_context) do
+    TestHelper.setup_require_bpy(_context)
+  end
 
   describe "export_json/2" do
+    setup :require_bpy
+
     test "exports mock data successfully" do
       result = BpyMcp.Mesh.export_json("/tmp", %{})
 
@@ -54,6 +61,8 @@ defmodule BpyMcp.MeshTest do
   end
 
   describe "import_bmesh_scene/2" do
+    setup :require_bpy
+
     test "imports mock glTF data successfully" do
       # First export some data to get valid glTF JSON
       {:ok, gltf_data} = BpyMcp.Mesh.export_bmesh_scene("/tmp")
@@ -104,6 +113,8 @@ defmodule BpyMcp.MeshTest do
   end
 
   describe "round-trip export/import" do
+    setup :require_bpy
+
     test "export then import preserves mesh structure" do
       # Export mock scene
       {:ok, exported_gltf} = BpyMcp.Mesh.export_bmesh_scene("/tmp")

@@ -9,9 +9,7 @@ defmodule BpyMcp.NativeService do
 
   alias BpyMcp.NativeService.Context
   alias BpyMcp.NativeService.SchemaConverter
-  alias BpyMcp.NativeService.Resources
   alias BpyMcp.NativeService.Helpers
-  alias BpyMcp.NativeService.Prompts
 
   # Suppress warnings from ex_mcp DSL generated code
   @compile {:no_warn_undefined, :no_warn_pattern}
@@ -223,235 +221,6 @@ defmodule BpyMcp.NativeService do
     })
   end
 
-  deftool "plan_scene_construction" do
-    meta do
-      name("Plan Scene Construction")
-
-      description(
-        "Plans a sequence of commands to construct a scene from initial state to goal state. Returns a JSON plan with ordered steps."
-      )
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        plan_spec: %{
-          type: "object",
-          description: "Planning specification with initial_state, goal_state, and optional constraints",
-          properties: %{
-            initial_state: %{
-              type: "object",
-              description: "Initial scene state (e.g., {'objects': []})"
-            },
-            goal_state: %{
-              type: "object",
-              description:
-                "Desired scene state (e.g., {'objects': [{'type': 'cube', 'name': 'Cube1', 'location': [0,0,0]}]})"
-            },
-            constraints: %{
-              type: "array",
-              description: "Optional constraints on the planning (dependency rules, ordering, etc.)"
-            }
-          },
-          required: ["initial_state", "goal_state"]
-        },
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["plan_spec"]
-    })
-  end
-
-  deftool "plan_material_application" do
-    meta do
-      name("Plan Material Application")
-      description("Plans the sequence of material creation and assignment commands, respecting material dependencies.")
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        plan_spec: %{
-          type: "object",
-          description: "Material planning specification",
-          properties: %{
-            objects: %{
-              type: "array",
-              description: "List of objects that need materials"
-            },
-            materials: %{
-              type: "array",
-              description: "List of materials to apply"
-            },
-            dependencies: %{
-              type: "array",
-              description: "Material dependencies (e.g., [{'from': 'BaseMaterial', 'to': 'DerivedMaterial'}])"
-            }
-          },
-          required: ["objects", "materials"]
-        },
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["plan_spec"]
-    })
-  end
-
-  deftool "plan_animation" do
-    meta do
-      name("Plan Animation")
-
-      description(
-        "Plans animation sequences with temporal constraints. Generates keyframe timing that respects dependencies and deadlines."
-      )
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        plan_spec: %{
-          type: "object",
-          description: "Animation planning specification",
-          properties: %{
-            animations: %{
-              type: "array",
-              description: "List of animations to schedule (each with object, property, value, duration)"
-            },
-            constraints: %{
-              type: "array",
-              description: "Temporal constraints (precedence, deadlines, etc.)"
-            },
-            total_frames: %{
-              type: "number",
-              description: "Total number of frames in animation",
-              default: 250
-            }
-          },
-          required: ["animations"]
-        },
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["plan_spec"]
-    })
-  end
-
-  deftool "execute_plan" do
-    meta do
-      name("Execute Plan")
-
-      description(
-        "Executes a previously generated plan by calling bpy-mcp tools in the specified order. Handles dependencies and failures."
-      )
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        plan_data: %{
-          type: "string",
-          description:
-            "JSON string containing the plan to execute (as returned by plan_scene_construction, plan_material_application, or plan_animation)"
-        },
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["plan_data"]
-    })
-  end
-
-  deftool "run_lazy" do
-    meta do
-      name("Run Lazy Planner")
-
-      description(
-        "Generic planning tool using run_lazy that handles goal decomposition, dependencies, temporal constraints, and custom domain specifications. Supports any planning scenario that PERT or other planners could handle."
-      )
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        plan_spec: %{
-          type: "object",
-          description: "Generic planning specification compatible with run_lazy",
-          properties: %{
-            initial_state: %{
-              type: "object",
-              description: "Initial state for planning (can include facts, timeline, entity_capabilities, constraints)"
-            },
-            tasks: %{
-              type: "array",
-              description:
-                "List of tasks to achieve. Tasks can be high-level goals (decomposed by domain methods) or specific commands (called directly). Each task can be a string (task name), array [task_name, args], or object {\"task\": name, \"args\": args}"
-            },
-            domain: %{
-              type: "object",
-              description:
-                "Optional custom domain specification with methods and commands. If not provided, uses default domain",
-              properties: %{
-                methods: %{
-                  type: "object",
-                  description: "Methods for goal decomposition (maps goal names to decomposition functions)"
-                },
-                commands: %{
-                  type: "object",
-                  description: "Commands available in the domain (maps command names to command functions)"
-                },
-                initial_tasks: %{
-                  type: "array",
-                  description: "Initial tasks for the domain"
-                }
-              }
-            },
-            constraints: %{
-              type: "array",
-              description: "Constraints on the planning (dependencies, temporal, precedence, etc.)"
-            },
-            opts: %{
-              type: "object",
-              description: "Optional planner options (execution mode, backtracking config, etc.)"
-            }
-          },
-          required: ["initial_state", "tasks"]
-        },
-        context_token: %{
-          type: "string",
-          description: "Optional context token (macaroon) for scene context. If not provided, uses default context."
-        },
-        scene_id: %{
-          type: "string",
-          description: "Optional scene ID. If not provided, uses default scene."
-        }
-      },
-      required: ["plan_spec"]
-    })
-  end
-
   deftool "acquire_context" do
     meta do
       name("Acquire Context")
@@ -589,101 +358,6 @@ defmodule BpyMcp.NativeService do
         }
       }
     })
-  end
-
-  deftool "aria_math" do
-    meta do
-      name("Aria Math")
-
-      description(
-        "Call aria_math API functions. Supports Primitives, Vector3, Matrix4, and Quaternion modules with their whitelisted functions."
-      )
-    end
-
-    input_schema(%{
-      type: "object",
-      properties: %{
-        module: %{
-          type: "string",
-          description: "Module name: 'Primitives', 'Vector3', 'Matrix4', or 'Quaternion'",
-          enum: ["Primitives", "Vector3", "Matrix4", "Quaternion"]
-        },
-        function: %{
-          type: "string",
-          description: "Function name to call (must be whitelisted in aria_math API)"
-        },
-        args: %{
-          type: "array",
-          description: "Array of arguments for the function call",
-          default: []
-        }
-      },
-      required: ["module", "function"]
-    })
-  end
-
-  # Override handle_request to delegate to Resources module
-  @impl true
-  def handle_request(%{"method" => "resources/list"} = request, _params, state) do
-    Resources.handle_resources_list(request, state)
-  end
-
-  @impl true
-  def handle_request(%{"method" => "resources/read"} = request, params, state) do
-    Resources.handle_resources_read(request, params, state)
-  end
-
-  # Handle prompts/list and prompts/get for hard-coded seed prompts
-  @impl true
-  def handle_request(%{"method" => "prompts/list"} = request, _params, state) do
-    prompts = Prompts.list_prompts()
-
-    id = Map.get(request, "id", nil)
-
-    response =
-      %{
-        "jsonrpc" => "2.0",
-        "result" => %{
-          "prompts" => prompts
-        }
-      }
-      |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-
-    {:reply, response, state}
-  end
-
-  @impl true
-  def handle_request(%{"method" => "prompts/get"} = request, params, state) do
-    prompt_name = Map.get(params, "name", "")
-
-    case Prompts.get_prompt(prompt_name) do
-      {:ok, prompt} ->
-        id = Map.get(request, "id", nil)
-
-        response =
-          %{
-            "jsonrpc" => "2.0",
-            "result" => prompt
-          }
-          |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-
-        {:reply, response, state}
-
-      {:error, reason} ->
-        id = Map.get(request, "id", nil)
-
-        response =
-          %{
-            "jsonrpc" => "2.0",
-            "error" => %{
-              "code" => -32602,
-              "message" => "Prompt not found: #{reason}"
-            }
-          }
-          |> then(fn r -> if id, do: Map.put(r, "id", id), else: r end)
-
-        {:reply, response, state}
-    end
   end
 
   # Override handle_request to intercept tools/list and convert input_schema to inputSchema
@@ -828,146 +502,58 @@ defmodule BpyMcp.NativeService do
   end
 
   @impl true
-  def handle_tool_call("plan_scene_construction", args, state) do
-    plan_spec = Map.get(args, "plan_spec", %{})
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Tools.plan_scene_construction(plan_spec, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Plan generated:\n#{result}")]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("plan_material_application", args, state) do
-    plan_spec = Map.get(args, "plan_spec", %{})
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Tools.plan_material_application(plan_spec, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Material plan generated:\n#{result}")]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("plan_animation", args, state) do
-    plan_spec = Map.get(args, "plan_spec", %{})
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Tools.plan_animation(plan_spec, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Animation plan generated:\n#{result}")]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("execute_plan", args, state) do
-    plan_data = Map.get(args, "plan_data", "")
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Tools.execute_plan(plan_data, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Plan execution result:\n#{result}")]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("run_lazy", args, state) do
-    plan_spec = Map.get(args, "plan_spec", %{})
-
-    with {:ok, temp_dir, _context_pid} <- Context.get_or_create_context(args, state),
-         {:ok, result} <- BpyMcp.Tools.Planning.run_lazy_planning(plan_spec, temp_dir) do
-      {:ok, %{content: [Helpers.text_content("Run Lazy Planning Result:\n#{result}")]}, state}
-    else
-      {:error, reason} -> {:error, reason, state}
-    end
-  end
-
-  @impl true
   def handle_tool_call("acquire_context", args, state) do
     scene_id = Map.get(args, "scene_id", "default")
     resource_uri = Map.get(args, "resource_uri")
 
-    cond do
-      # Acquire from stored resource: load from AriaStorage
-      resource_uri != nil and String.starts_with?(resource_uri, "aria://stored/") ->
-        handle_acquire_from_stored(resource_uri, scene_id, state)
+    # Acquire from active scene resource: get existing context
+    if resource_uri != nil and String.starts_with?(resource_uri, "aria://scene/") do
+      case Helpers.parse_scene_uri(resource_uri) do
+        {:ok, sid} ->
+          handle_set_context(sid, state)
 
-      # Acquire from active scene resource: get existing context
-      resource_uri != nil and String.starts_with?(resource_uri, "aria://scene/") ->
-        case Helpers.parse_scene_uri(resource_uri) do
-          {:ok, sid} ->
-            handle_set_context(sid, state)
-
-          {:error, reason} ->
-            {:error, "Invalid resource URI: #{reason}", state}
-        end
-
+        {:error, reason} ->
+          {:error, "Invalid resource URI: #{reason}", state}
+      end
+    else
       # Standard acquire_context: create or get by scene_id
-      true ->
-        handle_set_context(scene_id, state)
+      handle_set_context(scene_id, state)
     end
   end
 
   @impl true
   def handle_tool_call("fork_resource", args, state) do
     resource_uri = Map.get(args, "resource_uri")
-    storage_ref = Map.get(args, "storage_ref")
     new_scene_id = Map.get(args, "new_scene_id")
 
-    # Determine storage_ref from URI or direct parameter
-    target_storage_ref =
-      if resource_uri do
-        String.replace_prefix(resource_uri, "aria://stored/", "")
-      else
-        storage_ref
-      end
+    # Fork from active scene resource
+    if resource_uri != nil and String.starts_with?(resource_uri, "aria://scene/") do
+      case Helpers.parse_scene_uri(resource_uri) do
+        {:ok, source_scene_id} ->
+          final_scene_id = new_scene_id || "forked_#{source_scene_id}_#{System.unique_integer([:positive])}"
 
-    if not target_storage_ref or target_storage_ref == "" do
-      {:error, "Must provide either resource_uri or storage_ref", state}
-    else
-      # Generate new scene_id if not provided
-      final_scene_id = new_scene_id || "forked_#{target_storage_ref}_#{System.unique_integer([:positive])}"
-
-      # Retrieve the stored resource and fork it
-      case ResourceStorage.get_scene_resource(target_storage_ref, format: :json) do
-        {:ok, stored_data} ->
           case BpyMcp.set_context(final_scene_id) do
             {:ok, pid} ->
-              # Store the forked scene to AriaStorage as a new independent resource
-              case ResourceStorage.store_scene_resource(final_scene_id, stored_data,
-                     format: :json,
-                     compression: :zstd
-                   ) do
-                {:ok, _forked_ref} ->
-                  metadata = %{
+              metadata = %{
+                scene_id: final_scene_id,
+                operation_count: 0,
+                forked_from: source_scene_id
+              }
+
+              case Context.encode_context_token(pid, metadata) do
+                {:ok, token} ->
+                  info = %{
                     scene_id: final_scene_id,
-                    operation_count: 0,
-                    forked_from: target_storage_ref
+                    context_token: token,
+                    forked_from: source_scene_id,
+                    resource_uri: "aria://scene/#{final_scene_id}"
                   }
 
-                  case Context.encode_context_token(pid, metadata) do
-                    {:ok, token} ->
-                      info = %{
-                        scene_id: final_scene_id,
-                        context_token: token,
-                        forked_from: target_storage_ref,
-                        resource_uri: "aria://scene/#{final_scene_id}"
-                      }
-
-                      {:ok, %{content: [Helpers.text_content("Resource forked successfully: #{Jason.encode!(info)}")]},
-                       Map.put(state, :context_token, token)}
-
-                    {:error, reason} ->
-                      {:error, "Failed to encode context token: #{reason}", state}
-                  end
+                  {:ok, %{content: [Helpers.text_content("Resource forked successfully: #{Jason.encode!(info)}")]},
+                   Map.put(state, :context_token, token)}
 
                 {:error, reason} ->
-                  {:error, "Failed to store forked resource: #{reason}", state}
+                  {:error, "Failed to encode context token: #{reason}", state}
               end
 
             {:error, reason} ->
@@ -975,8 +561,10 @@ defmodule BpyMcp.NativeService do
           end
 
         {:error, reason} ->
-          {:error, "Failed to retrieve stored resource: #{reason}", state}
+          {:error, "Invalid resource URI: #{reason}", state}
       end
+    else
+      {:error, "Must provide resource_uri pointing to aria://scene/", state}
     end
   end
 
@@ -1007,99 +595,6 @@ defmodule BpyMcp.NativeService do
     else
       {:error, reason} ->
         {:error, "Failed to set context: #{reason}", state}
-    end
-  end
-
-  # Helper to acquire context from stored resource
-  defp handle_acquire_from_stored(resource_uri, scene_id, state) do
-    storage_ref = String.replace_prefix(resource_uri, "aria://stored/", "")
-    final_scene_id = if scene_id == "default", do: storage_ref, else: scene_id
-
-    case ResourceStorage.get_scene_resource(storage_ref, format: :json) do
-      {:ok, stored_data} ->
-        case BpyMcp.set_context(final_scene_id) do
-          {:ok, pid} ->
-            # Import scene data if available
-            import_result =
-              if is_map(stored_data) do
-                # Check if we have glTF data to import
-                cond do
-                  Map.has_key?(stored_data, "gltf_data") ->
-                    # Import glTF BMesh data
-                    gltf_json =
-                      if is_binary(stored_data["gltf_data"]),
-                        do: stored_data["gltf_data"],
-                        else: Jason.encode!(stored_data["gltf_data"])
-
-                    # Get temp_dir for this context
-                    case Context.get_or_create_context(%{"scene_id" => final_scene_id}, %{}) do
-                      {:ok, temp_dir, _context_pid} ->
-                        case BpyMcp.Mesh.import_bmesh_scene(gltf_json, temp_dir) do
-                          {:ok, _message} -> :ok
-                          {:error, reason} -> {:error, "Failed to import scene data: #{reason}"}
-                        end
-
-                      {:error, reason} ->
-                        {:error, "Failed to get context for import: #{reason}"}
-                    end
-
-                  Map.has_key?(stored_data, "scene_info") ->
-                    # Scene info available but no glTF data - scene is already active
-                    # Just reset to ensure clean state
-                    case Context.get_or_create_context(%{"scene_id" => final_scene_id}, %{}) do
-                      {:ok, temp_dir, _context_pid} ->
-                        case BpyMcp.Tools.reset_scene(temp_dir) do
-                          {:ok, _} -> :ok
-                          {:error, reason} -> {:error, "Failed to reset scene: #{reason}"}
-                        end
-
-                      {:error, reason} ->
-                        {:error, "Failed to get context for reset: #{reason}"}
-                    end
-
-                  true ->
-                    # No importable data
-                    :ok
-                end
-              else
-                :ok
-              end
-
-            # Log import result but don't fail context creation if import fails
-            if match?({:error, _}, import_result) do
-              # Non-blocking error logging (won't break stdio mode)
-              # In production, this would go to Logger, but we avoid that in stdio mode
-            end
-
-            metadata = %{
-              scene_id: final_scene_id,
-              operation_count: 0,
-              acquired_from: storage_ref
-            }
-
-            case Context.encode_context_token(pid, metadata) do
-              {:ok, token} ->
-                info = %{
-                  scene_id: final_scene_id,
-                  context_token: token,
-                  acquired_from: storage_ref,
-                  resource_uri: "aria://scene/#{final_scene_id}"
-                }
-
-                {:ok,
-                 %{content: [Helpers.text_content("Context acquired from stored resource: #{Jason.encode!(info)}")]},
-                 Map.put(state, :context_token, token)}
-
-              {:error, reason} ->
-                {:error, "Failed to encode context token: #{reason}", state}
-            end
-
-          {:error, reason} ->
-            {:error, "Failed to create context from stored resource: #{reason}", state}
-        end
-
-      {:error, reason} ->
-        {:error, "Failed to retrieve stored resource: #{reason}", state}
     end
   end
 
@@ -1260,21 +755,6 @@ defmodule BpyMcp.NativeService do
 
       {:error, reason} ->
         {:error, "Failed to list contexts: #{reason}", state}
-    end
-  end
-
-  @impl true
-  def handle_tool_call("aria_math", args, state) do
-    module = Map.get(args, "module")
-    function = Map.get(args, "function")
-    function_args = Map.get(args, "args", [])
-
-    case BpyMcp.MathTools.call_aria_math(module, function, function_args) do
-      {:ok, result} ->
-        {:ok, %{content: [Helpers.text_content("Result: #{inspect(result)}")]}, state}
-
-      {:error, reason} ->
-        {:error, reason, state}
     end
   end
 

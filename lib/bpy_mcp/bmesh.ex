@@ -11,29 +11,34 @@ defmodule BpyMcp.BMesh do
   """
   @spec ensure_pythonx() :: :ok | :mock
   def ensure_pythonx do
-    # Force mock mode during testing to avoid initialization
-    # unless explicitly disabled
-    force_mock =
-      Application.get_env(:bpy_mcp, :force_mock, false) or
-        (System.get_env("MIX_ENV") == "test" and System.get_env("BYP_MCP_USE_NATIVE") != "true")
+    case Application.ensure_all_started(:pythonx) do
+      {:error, _reason} ->
+        :mock
 
-    if force_mock do
-      :mock
-    else
-      case Application.ensure_all_started(:pythonx) do
-        {:error, _reason} ->
-          :mock
-
-        {:ok, _} ->
-          check_pythonx_availability()
-      end
+      {:ok, _} ->
+        check_pythonx_availability()
     end
   rescue
     _ -> :mock
   end
 
   defp check_pythonx_availability do
-    # Python/bpy removed - always return mock
-    :mock
+    try do
+      # Check if bpy is available by trying to import it
+      code = """
+      try:
+          import bpy
+          result = True
+      except ImportError:
+          result = False
+      """
+
+      case Pythonx.eval(code, %{}) do
+        true -> :ok
+        _ -> :mock
+      end
+    rescue
+      _ -> :mock
+    end
   end
 end

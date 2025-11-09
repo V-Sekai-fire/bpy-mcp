@@ -4,13 +4,20 @@
 defmodule BpyMcp.McpProtocolTest do
   use ExUnit.Case, async: false
   alias BpyMcp.NativeService
+  alias BpyMcp.TestHelper
 
   setup do
     # Native service is started by application, just use handle_tool_call directly
     %{}
   end
 
+  defp require_bpy(_context) do
+    TestHelper.setup_require_bpy(_context)
+  end
+
   describe "MCP Protocol - Tools List" do
+    setup :require_bpy
+
     test "all individual tools exist", %{} do
       # Test that each tool can be called directly
       expected_tools = ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
@@ -42,6 +49,8 @@ defmodule BpyMcp.McpProtocolTest do
   end
 
   describe "MCP Protocol - Tool Calls" do
+    setup :require_bpy
+
     test "reset_scene tool call", %{} do
       args = %{}
       state = %{}
@@ -110,6 +119,8 @@ defmodule BpyMcp.McpProtocolTest do
   end
 
   describe "Context Token Handling" do
+    setup :require_bpy
+
     test "reset_scene can create context", %{} do
       args = %{}
       state = %{}
@@ -148,6 +159,8 @@ defmodule BpyMcp.McpProtocolTest do
   end
 
   describe "Error Handling" do
+    setup :require_bpy
+
     test "missing required parameters for import_bmesh", %{} do
       # import_bmesh requires gltf_data
       args = %{}

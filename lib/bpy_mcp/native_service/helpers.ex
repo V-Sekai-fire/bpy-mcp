@@ -10,7 +10,6 @@ defmodule BpyMcp.NativeService.Helpers do
   """
 
   alias BpyMcp.NativeService.Context
-  alias BpyMcp.ResourceStorage
 
   @doc """
   Helper function to create text content for MCP responses.
@@ -36,26 +35,6 @@ defmodule BpyMcp.NativeService.Helpers do
   end
 
   def parse_scene_uri(_uri), do: {:error, "Invalid URI format. Expected: aria://scene/{scene_id}"}
-
-  @doc """
-  Store scene data to AriaStorage for persistence.
-
-  Creates an async backup copy of the scene.
-  """
-  @spec store_scene_to_aria_storage(String.t(), map()) :: {:ok, String.t()} | {:error, String.t()}
-  def store_scene_to_aria_storage(scene_id, scene_data) do
-    case ResourceStorage.store_scene_resource(scene_id, scene_data,
-           format: :json,
-           compression: :zstd
-         ) do
-      {:ok, storage_ref} ->
-        {:ok, storage_ref}
-
-      {:error, reason} ->
-        # Log error but don't fail the request
-        {:error, reason}
-    end
-  end
 
   @doc """
   Get scene resource data by scene_id.
@@ -92,11 +71,6 @@ defmodule BpyMcp.NativeService.Helpers do
                 scene_info: scene_info
               }
 
-              # Store to AriaStorage for persistence (async, don't wait)
-              Task.start(fn ->
-                store_scene_to_aria_storage(scene_id_actual, resource_data)
-              end)
-
               {:ok, resource_data}
 
             {:error, _reason} ->
@@ -108,11 +82,6 @@ defmodule BpyMcp.NativeService.Helpers do
                 context_token: context_token,
                 note: "Scene exists but detailed info unavailable"
               }
-
-              # Store to AriaStorage for persistence (async, don't wait)
-              Task.start(fn ->
-                store_scene_to_aria_storage(scene_id_actual, resource_data)
-              end)
 
               {:ok, resource_data}
           end

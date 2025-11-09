@@ -15,7 +15,7 @@ defmodule BpyMcp.Tools do
   - `BpyMcp.Tools.Utils` - Shared utilities
   """
 
-  alias BpyMcp.Tools.{Objects, Materials, Rendering, Scene, Introspection, Planning}
+  alias BpyMcp.Tools.{Objects, Materials, Rendering, Scene, Introspection}
 
   @type result :: {:ok, term()} | {:error, String.t()}
 
@@ -85,52 +85,4 @@ defmodule BpyMcp.Tools do
   """
   @spec introspect_python(String.t(), String.t() | nil, String.t()) :: result()
   defdelegate introspect_python(object_path, prep_code \\ nil, temp_dir), to: Introspection
-
-  # Planning functions
-  @doc """
-  Plans a scene construction workflow given initial and goal states.
-  """
-  @spec plan_scene_construction(map(), String.t()) :: result()
-  defdelegate plan_scene_construction(plan_spec, temp_dir), to: Planning
-
-  @doc """
-  Plans material application sequence respecting dependencies.
-  """
-  @spec plan_material_application(map(), String.t()) :: result()
-  defdelegate plan_material_application(plan_spec, temp_dir), to: Planning
-
-  @doc """
-  Plans animation sequence with temporal constraints.
-  """
-  @spec plan_animation(map(), String.t()) :: result()
-  defdelegate plan_animation(plan_spec, temp_dir), to: Planning
-
-  @doc """
-  Executes a generated plan by calling bpy-mcp tools in sequence.
-  """
-  @spec execute_plan(String.t(), String.t()) :: result()
-  defdelegate execute_plan(plan_data, temp_dir), to: Planning
-
-  # Test helper functions for backward compatibility
-  @doc false
-  def test_mock_create_cube(name, location, size),
-    do: Objects.test_mock_create_cube(name, location, size)
-
-  @doc false
-  def test_mock_create_sphere(name, location, radius),
-    do: Objects.test_mock_create_sphere(name, location, radius)
-
-  @doc false
-  def test_mock_set_material(object_name, material_name, color),
-    do: Materials.test_mock_set_material(object_name, material_name, color)
-
-  @doc false
-  def test_mock_render_image(filepath, resolution_x, resolution_y),
-    do: Rendering.test_mock_render_image(filepath, resolution_x, resolution_y)
-
-  @doc false
-  def test_mock_get_scene_info(), do: Scene.test_mock_get_scene_info()
-
-  @doc false
-  def test_mock_reset_scene(), do: Scene.test_mock_reset_scene()
 end

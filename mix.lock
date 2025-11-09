@@ -1,7 +1,8 @@
 %{
+  "abnf_parsec": {:hex, :abnf_parsec, "2.1.0", "c4e88d5d089f1698297c0daced12be1fb404e6e577ecf261313ebba5477941f9", [:mix], [{:nimble_parsec, "~> 1.4", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm", "e0ed6290c7cc7e5020c006d1003520390c9bdd20f7c3f776bd49bfe3c5cd362a"},
   "aria_core": {:git, "https://github.com/V-Sekai-fire/aria-core.git", "abcbc4cd2bb0ed8bf7755ffad779c5dc3938deb4", []},
   "aria_math": {:git, "https://github.com/V-Sekai-fire/aria-math.git", "68cffe8af023aff720f7f55cd64b36057e69058d", []},
-  "aria_planner": {:git, "https://github.com/V-Sekai-fire/aria-planner.git", "8e839820000a1cdaa9e5ea7f7cac0b957dd3168a", []},
+  "aria_planner": {:git, "https://github.com/V-Sekai-fire/aria-planner.git", "d6f8e3bb6a1961a02b0214a449ca7a8cd6ed512d", []},
   "aria_storage": {:git, "https://github.com/V-Sekai-fire/aria-storage.git", "d026ba34a9e11cea74eedf2a82fbb27765046116", []},
   "axon": {:hex, :axon, "0.7.0", "2e2c6d93b4afcfa812566b8922204fa022b60081e86ebd411df4db7ea30f5457", [:mix], [{:kino, "~> 0.7", [hex: :kino, repo: "hexpm", optional: true]}, {:kino_vega_lite, "~> 0.1.7", [hex: :kino_vega_lite, repo: "hexpm", optional: true]}, {:nx, "~> 0.9", [hex: :nx, repo: "hexpm", optional: false]}, {:polaris, "~> 0.1", [hex: :polaris, repo: "hexpm", optional: false]}, {:table_rex, "~> 3.1.1", [hex: :table_rex, repo: "hexpm", optional: true]}], "hexpm", "ee9857a143c9486597ceff434e6ca833dc1241be6158b01025b8217757ed1036"},
   "briefly": {:hex, :briefly, "0.5.1", "ee10d48da7f79ed2aebdc3e536d5f9a0c3e36ff76c0ad0d4254653a152b13a8a", [:mix], [], "hexpm", "bd684aa92ad8b7b4e0d92c31200993c4bc1469fc68cd6d5f15144041bd15cb57"},
@@ -53,6 +54,7 @@
   "mint_web_socket": {:hex, :mint_web_socket, "1.0.4", "0b539116dbb3d3f861cdf5e15e269a933cb501c113a14db7001a3157d96ffafd", [:mix], [{:mint, ">= 1.4.1 and < 2.0.0-0", [hex: :mint, repo: "hexpm", optional: false]}], "hexpm", "027d4c5529c45a4ba0ce27a01c0f35f284a5468519c045ca15f43decb360a991"},
   "msgpax": {:hex, :msgpax, "2.4.0", "4647575c87cb0c43b93266438242c21f71f196cafa268f45f91498541148c15d", [:mix], [{:plug, "~> 1.0", [hex: :plug, repo: "hexpm", optional: true]}], "hexpm", "ca933891b0e7075701a17507c61642bf6e0407bb244040d5d0a58597a06369d2"},
   "nimble_options": {:hex, :nimble_options, "1.1.1", "e3a492d54d85fc3fd7c5baf411d9d2852922f66e69476317787a7b2bb000a61b", [:mix], [], "hexpm", "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44"},
+  "nimble_parsec": {:hex, :nimble_parsec, "1.4.2", "8efba0122db06df95bfaa78f791344a89352ba04baedd3849593bfce4d0dc1c6", [:mix], [], "hexpm", "4b21398942dda052b403bbe1da991ccd03a053668d147d53fb8c4e0efe09c973"},
   "nimble_pool": {:hex, :nimble_pool, "1.1.0", "bf9c29fbdcba3564a8b800d1eeb5a3c58f36e1e11d7b7fb2e084a643f645f06b", [:mix], [], "hexpm", "af2e4e6b34197db81f7aad230c1118eac993acc0dae6bc83bac0126d4ae0813a"},
   "nx": {:hex, :nx, "0.10.0", "128e4a094cb790f663e20e1334b127c1f2a4df54edfb8b13c22757ec33133b4f", [:mix], [{:complex, "~> 0.6", [hex: :complex, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.0 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "3db8892c124aeee091df0e6fbf8e5bf1b81f502eb0d4f5ba63e6378ebcae7da4"},
   "parse_trans": {:hex, :parse_trans, "3.4.1", "6e6aa8167cb44cc8f39441d05193be6e6f4e7c2946cb2759f015f8c56b76e5ff", [:rebar3], [], "hexpm", "620a406ce75dada827b82e453c19cf06776be266f5a67cff34e1ef2cbb60e49a"},
