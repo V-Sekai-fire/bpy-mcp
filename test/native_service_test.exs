@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.NativeServiceTest do
+defmodule BpyMcp.NativeServiceTest do
   use ExUnit.Case, async: true
-  alias AriaForge.NativeService
+  alias BpyMcp.NativeService
 
   describe "module structure" do
     test "defines handle_tool_call function" do
@@ -11,7 +11,7 @@ defmodule AriaForge.NativeServiceTest do
     end
 
     test "is a GenServer" do
-      assert AriaForge.NativeService.__info__(:attributes)[:behaviour] == [GenServer]
+      assert BpyMcp.NativeService.__info__(:attributes)[:behaviour] == [GenServer]
     end
   end
 
@@ -39,30 +39,30 @@ defmodule AriaForge.NativeServiceTest do
     test "bpy_create_cube tool is defined" do
       # This tests that the tool definition exists in the module
       # We can't easily test the actual tool calling without setup
-      assert NativeService.__info__(:module) == AriaForge.NativeService
+      assert NativeService.__info__(:module) == BpyMcp.NativeService
     end
 
     test "bpy_create_sphere tool is defined" do
-      assert NativeService.__info__(:module) == AriaForge.NativeService
+      assert NativeService.__info__(:module) == BpyMcp.NativeService
     end
 
     test "bpy_set_material tool is defined" do
-      assert NativeService.__info__(:module) == AriaForge.NativeService
+      assert NativeService.__info__(:module) == BpyMcp.NativeService
     end
 
     test "bpy_render_image tool is defined" do
-      assert NativeService.__info__(:module) == AriaForge.NativeService
+      assert NativeService.__info__(:module) == BpyMcp.NativeService
     end
 
     test "bpy_get_scene_info tool is defined" do
-      assert NativeService.__info__(:module) == AriaForge.NativeService
+      assert NativeService.__info__(:module) == BpyMcp.NativeService
     end
   end
 
   describe "server metadata" do
     test "server has correct name and version" do
       # Test that the server is properly configured with ExMCP.Server
-      assert AriaForge.NativeService.__info__(:module) == AriaForge.NativeService
+      assert BpyMcp.NativeService.__info__(:module) == BpyMcp.NativeService
     end
   end
 end

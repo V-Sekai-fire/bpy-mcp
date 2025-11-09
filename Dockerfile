@@ -92,7 +92,7 @@ ENV PATH="/opt/elixir/bin:${PATH}"
 # No need to install them here as pythonx manages its own Python environment
 
 # Copy the release from builder
-COPY --from=builder /app/_build/prod/rel/aria_forge ./aria_forge
+COPY --from=builder /app/_build/prod/rel/bpy_mcp ./bpy_mcp
 
 # Set environment variables
 ENV MIX_ENV=prod
@@ -106,5 +106,4 @@ ENV LC_ALL=C.UTF-8
 EXPOSE 4000
 
 # Start the server
-CMD ["./aria_forge/bin/aria_forge", "start"]
-
+CMD ["./bpy_mcp/bin/bpy_mcp", "start"]

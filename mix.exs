@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.MixProject do
+defmodule BpyMcp.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :aria_forge,
+      app: :bpy_mcp,
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
@@ -15,14 +15,14 @@ defmodule AriaForge.MixProject do
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore.exs"
       ],
-      test_coverage: [summary: [threshold: 75], ignore_modules: [AriaForge.NativeService, Mix.Tasks.Mcp.Server]]
+      test_coverage: [summary: [threshold: 75], ignore_modules: [BpyMcp.NativeService, Mix.Tasks.Mcp.Server]]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {AriaForge.Application, []},
+      mod: {BpyMcp.Application, []},
       applications: [
         :logger,
         :ex_mcp,
@@ -59,9 +59,9 @@ defmodule AriaForge.MixProject do
   # Release configuration
   defp releases do
     [
-      aria_forge: [
+      bpy_mcp: [
         include_executables_for: [:unix],
-        applications: [aria_forge: :permanent],
+        applications: [bpy_mcp: :permanent],
         # Use unique node names to avoid conflicts when multiple instances start
         # Generate node name based on timestamp to ensure uniqueness
         vm_args: "rel/vm.args"

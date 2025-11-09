@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Mcp.Stdio do
     Mix.Task.run("app.start")
 
     # Start the MCP application
-    Application.ensure_all_started(:aria_forge)
+    Application.ensure_all_started(:bpy_mcp)
 
     # DO NOT output to stdout/stderr - any output breaks JSON-RPC protocol
     # The MCP server will handle all communication via stdin/stdout

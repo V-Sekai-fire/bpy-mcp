@@ -44,15 +44,15 @@ defmodule Mix.Tasks.Mcp.Server do
     Mix.Task.run("app.start")
 
     # Start the MCP application
-    Application.ensure_all_started(:aria_forge)
+    Application.ensure_all_started(:bpy_mcp)
 
     case transport do
       :stdio ->
-        IO.puts(:stderr, "🚀 aria-forge stdio server started")
+        IO.puts(:stderr, "🚀 bpy-mcp stdio server started")
         IO.puts(:stderr, "📡 Ready to accept MCP protocol messages via stdin/stdout")
 
       _ ->
-        IO.puts("🚀 aria-forge #{transport} server started on port #{port}")
+        IO.puts("🚀 bpy-mcp #{transport} server started on port #{port}")
         IO.puts("📡 MCP endpoint: http://localhost:#{port}")
 
         if transport == :sse do

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.McpProtocolTest do
+defmodule BpyMcp.McpProtocolTest do
   use ExUnit.Case, async: false
-  alias AriaForge.NativeService
+  alias BpyMcp.NativeService
 
   setup do
     # Native service is started by application, just use handle_tool_call directly
@@ -17,12 +17,12 @@ defmodule AriaForge.McpProtocolTest do
 
       Enum.each(expected_tools, fn tool_name ->
         # Verify the tool handler exists
-        assert function_exported?(AriaForge.NativeService, :handle_tool_call, 3)
+        assert function_exported?(BpyMcp.NativeService, :handle_tool_call, 3)
 
         # Test that calling with empty args doesn't crash
         args = %{}
         state = %{}
-        result = AriaForge.NativeService.handle_tool_call(tool_name, args, state)
+        result = BpyMcp.NativeService.handle_tool_call(tool_name, args, state)
 
         # Should either succeed or return a meaningful error
         assert match?({:ok, _, _}, result) or match?({:error, _, _}, result)
@@ -33,7 +33,7 @@ defmodule AriaForge.McpProtocolTest do
       # Test that handle_tool_call returns the correct format
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("reset_scene", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("reset_scene", args, state)
 
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
@@ -45,7 +45,7 @@ defmodule AriaForge.McpProtocolTest do
     test "reset_scene tool call", %{} do
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("reset_scene", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("reset_scene", args, state)
 
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
@@ -60,7 +60,7 @@ defmodule AriaForge.McpProtocolTest do
       }
 
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("create_cube", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("create_cube", args, state)
 
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
@@ -83,7 +83,7 @@ defmodule AriaForge.McpProtocolTest do
       }
 
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("create_sphere", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("create_sphere", args, state)
 
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
@@ -92,7 +92,7 @@ defmodule AriaForge.McpProtocolTest do
     test "get_scene_info tool call", %{} do
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("get_scene_info", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("get_scene_info", args, state)
 
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
@@ -101,7 +101,7 @@ defmodule AriaForge.McpProtocolTest do
     test "unknown tool returns error", %{} do
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("unknown_tool", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("unknown_tool", args, state)
 
       assert {:error, error_message, _state} = result
       assert String.contains?(error_message, "Tool not found")
@@ -113,7 +113,7 @@ defmodule AriaForge.McpProtocolTest do
     test "reset_scene can create context", %{} do
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("reset_scene", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("reset_scene", args, state)
 
       assert {:ok, response, new_state} = result
       content = response.content
@@ -131,7 +131,7 @@ defmodule AriaForge.McpProtocolTest do
       reset_state = %{}
 
       {:ok, _reset_response, state_after_reset} =
-        AriaForge.NativeService.handle_tool_call("reset_scene", reset_args, reset_state)
+        BpyMcp.NativeService.handle_tool_call("reset_scene", reset_args, reset_state)
 
       # Now use the context token (if stored in state)
       context_token = Map.get(state_after_reset, :context_token)
@@ -141,7 +141,7 @@ defmodule AriaForge.McpProtocolTest do
         "context_token" => context_token
       }
 
-      result = AriaForge.NativeService.handle_tool_call("create_cube", create_args, state_after_reset)
+      result = BpyMcp.NativeService.handle_tool_call("create_cube", create_args, state_after_reset)
       assert {:ok, response, _state} = result
       assert Map.has_key?(response, :content)
     end
@@ -152,7 +152,7 @@ defmodule AriaForge.McpProtocolTest do
       # import_bmesh requires gltf_data
       args = %{}
       state = %{}
-      result = AriaForge.NativeService.handle_tool_call("import_bmesh", args, state)
+      result = BpyMcp.NativeService.handle_tool_call("import_bmesh", args, state)
 
       # Should handle missing parameters gracefully - either error or ok response
       assert match?({:error, _, _}, result) or match?({:ok, _, _}, result)

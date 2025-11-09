@@ -1,31 +1,31 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.IntegrationTest do
+defmodule BpyMcp.IntegrationTest do
   use ExUnit.Case, async: false
-  alias AriaForge.{StdioServer, NativeService}
+  alias BpyMcp.{StdioServer, NativeService}
 
   describe "Application startup" do
     test "application starts successfully" do
       # Test that the application can start (this is more of a smoke test)
       # In a real scenario, we'd mock the dependencies
-      assert is_atom(AriaForge.Application)
-      assert function_exported?(AriaForge.Application, :start, 2)
+      assert is_atom(BpyMcp.Application)
+      assert function_exported?(BpyMcp.Application, :start, 2)
     end
 
     test "application defines correct children" do
       # Test the supervision tree structure
       children = [
-        {AriaForge.NativeService, [name: AriaForge.NativeService]},
-        {AriaForge.StdioServer, []}
+        {BpyMcp.NativeService, [name: BpyMcp.NativeService]},
+        {BpyMcp.StdioServer, []}
       ]
 
-      opts = [strategy: :one_for_one, name: AriaForge.Supervisor]
+      opts = [strategy: :one_for_one, name: BpyMcp.Supervisor]
 
       # Verify the children list matches what Application.start/2 uses
       assert length(children) == 2
       assert opts[:strategy] == :one_for_one
-      assert opts[:name] == AriaForge.Supervisor
+      assert opts[:name] == BpyMcp.Supervisor
     end
   end
 
@@ -37,7 +37,7 @@ defmodule AriaForge.IntegrationTest do
       assert is_map(spec)
       # Map.keys order might vary, so check that all expected keys are present
       assert MapSet.subset?(MapSet.new(expected_keys), MapSet.new(Map.keys(spec)))
-      assert spec.id == AriaForge.StdioServer
+      assert spec.id == BpyMcp.StdioServer
       assert spec.type == :worker
       assert spec.restart == :permanent
       assert spec.shutdown == 500
@@ -70,7 +70,7 @@ defmodule AriaForge.IntegrationTest do
     test "server metadata is correctly defined" do
       # Test server information defined in the use ExMCP.Server macro
       # This is more of a compilation test, but ensures the server is properly configured
-      assert AriaForge.NativeService.__info__(:module) == AriaForge.NativeService
+      assert BpyMcp.NativeService.__info__(:module) == BpyMcp.NativeService
     end
   end
 
@@ -121,8 +121,8 @@ defmodule AriaForge.IntegrationTest do
 
     test "mix.exs includes proper configuration" do
       # Test that mix.exs has the expected configuration
-      assert function_exported?(AriaForge.MixProject, :project, 0)
-      assert function_exported?(AriaForge.MixProject, :application, 0)
+      assert function_exported?(BpyMcp.MixProject, :project, 0)
+      assert function_exported?(BpyMcp.MixProject, :application, 0)
     end
   end
 end

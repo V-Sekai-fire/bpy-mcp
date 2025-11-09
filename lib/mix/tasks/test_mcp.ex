@@ -11,9 +11,9 @@ defmodule Mix.Tasks.TestMcp do
   def run(_args) do
     Mix.Task.run("app.start")
 
-    alias AriaForge.NativeService
+    alias BpyMcp.NativeService
 
-    IO.puts("🧪 Testing aria-forge MCP Server via CLI")
+    IO.puts("🧪 Testing bpy-mcp MCP Server via CLI")
     IO.puts("=" <> String.duplicate("=", 50))
 
     # Initialize the server state

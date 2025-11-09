@@ -1,8 +1,11 @@
-defmodule AriaForgeTest do
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+
+defmodule BpyMcpTest do
   use ExUnit.Case
-  doctest AriaForge
+  doctest BpyMcp
 
   test "greets the world" do
-    assert AriaForge.hello() == :world
+    assert BpyMcp.hello() == :world
   end
 end

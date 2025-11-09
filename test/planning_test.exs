@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.PlanningTest do
+defmodule BpyMcp.PlanningTest do
   use ExUnit.Case, async: true
-  alias AriaForge.Tools.Planning
+  alias BpyMcp.Tools.Planning
 
-  @temp_dir "/tmp/aria_forge_test"
+  @temp_dir "/tmp/bpy_mcp_test"
 
   describe "plan_scene_construction/2" do
     test "creates plan for simple scene construction" do

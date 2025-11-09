@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaForge.ToolsTest do
+defmodule BpyMcp.ToolsTest do
   use ExUnit.Case, async: true
-  alias AriaForge.Tools
+  alias BpyMcp.Tools
 
   describe "create_cube/3" do
     test "creates cube with custom parameters" do
