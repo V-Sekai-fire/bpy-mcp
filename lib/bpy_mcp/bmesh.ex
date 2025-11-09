@@ -8,37 +8,11 @@ defmodule BpyMcp.BMesh do
 
   @doc """
   Ensure Pythonx is available for operations.
+  Since bpy is always available via pythonx, this always returns :ok.
   """
-  @spec ensure_pythonx() :: :ok | :mock
+  @spec ensure_pythonx() :: :ok
   def ensure_pythonx do
-    case Application.ensure_all_started(:pythonx) do
-      {:error, _reason} ->
-        :mock
-
-      {:ok, _} ->
-        check_pythonx_availability()
-    end
-  rescue
-    _ -> :mock
-  end
-
-  defp check_pythonx_availability do
-    try do
-      # Check if bpy is available by trying to import it
-      code = """
-      try:
-          import bpy
-          result = True
-      except ImportError:
-          result = False
-      """
-
-      case Pythonx.eval(code, %{}) do
-        true -> :ok
-        _ -> :mock
-      end
-    rescue
-      _ -> :mock
-    end
+    Application.ensure_all_started(:pythonx)
+    :ok
   end
 end

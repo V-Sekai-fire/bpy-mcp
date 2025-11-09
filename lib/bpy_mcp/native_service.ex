@@ -264,7 +264,7 @@ defmodule BpyMcp.NativeService do
         },
         storage_ref: %{
           type: "string",
-          description: "Storage reference from AriaStorage to fork from"
+          description: "Storage reference to fork from"
         },
         new_scene_id: %{
           type: "string",

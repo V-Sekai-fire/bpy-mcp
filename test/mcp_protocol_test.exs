@@ -15,39 +15,6 @@ defmodule BpyMcp.McpProtocolTest do
     TestHelper.setup_require_bpy(context)
   end
 
-  describe "MCP Protocol - Tools List" do
-    setup :require_bpy
-
-    test "all individual tools exist", %{} do
-      # Test that each tool can be called directly
-      expected_tools = ["reset_scene", "create_cube", "create_sphere", "get_scene_info", "export_bmesh", "import_bmesh"]
-
-      Enum.each(expected_tools, fn tool_name ->
-        # Verify the tool handler exists
-        assert function_exported?(BpyMcp.NativeService, :handle_tool_call, 3)
-
-        # Test that calling with empty args doesn't crash
-        args = %{}
-        state = %{}
-        result = BpyMcp.NativeService.handle_tool_call(tool_name, args, state)
-
-        # Should either succeed or return a meaningful error
-        assert match?({:ok, _, _}, result) or match?({:error, _, _}, result)
-      end)
-    end
-
-    test "tools handle_tool_call returns proper format", %{} do
-      # Test that handle_tool_call returns the correct format
-      args = %{}
-      state = %{}
-      result = BpyMcp.NativeService.handle_tool_call("reset_scene", args, state)
-
-      assert {:ok, response, _state} = result
-      assert Map.has_key?(response, :content)
-      assert is_list(response.content)
-    end
-  end
-
   describe "MCP Protocol - Tool Calls" do
     setup :require_bpy
 

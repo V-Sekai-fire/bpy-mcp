@@ -48,7 +48,6 @@ defmodule BpyMcp.Application do
     # Ensure required dependencies are started
     Application.ensure_all_started(:pythonx)
     Application.ensure_all_started(:briefly)
-    Application.ensure_all_started(:aria_storage)
 
     # Check if running in a release (Mix not available)
     is_release = not Code.ensure_loaded?(Mix)
@@ -62,9 +61,6 @@ defmodule BpyMcp.Application do
 
         "http" ->
           :http
-
-        "sse" ->
-          :sse
 
         _ ->
           # Default to http if PORT is set (Smithery deployment), otherwise stdio
@@ -112,7 +108,7 @@ defmodule BpyMcp.Application do
           name: BpyMcp.NativeService
         ]
 
-        # Add port and host only for HTTP transport
+        # Add port, host, and SSE for HTTP transport
         server_opts =
           if transport_type == :http do
             port =
@@ -133,9 +129,14 @@ defmodule BpyMcp.Application do
                   host
               end
 
+            # Enable SSE (Server-Sent Events) for streaming HTTP
+            # This enables real-time streaming of MCP responses
+            # ExMCP.HttpPlug is MCP spec compliant - only sends "message" events
+            # No extra events like "connect", "ping", or "endpoint" are sent
             server_opts
             |> Keyword.put(:port, port)
             |> Keyword.put(:host, host)
+            |> Keyword.put(:use_sse, true)
           else
             server_opts
           end

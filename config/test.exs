@@ -3,6 +3,13 @@
 
 import Config
 
-# Configure pythonx to use vendored bpy in test environment
-# Uses pythonx default initialization (no system Blender paths)
-# pythonx will automatically use the vendored bpy module
+# Configure pythonx to auto-initialize with bpy in test environment
+# bpy is vendored and always available via pythonx
+config :pythonx, :uv_init,
+  pyproject_toml: """
+  [project]
+  name = "bpy-mcp"
+  version = "0.1.0"
+  requires-python = ">=3.10"
+  dependencies = []
+  """

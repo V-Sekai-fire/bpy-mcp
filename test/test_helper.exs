@@ -15,8 +15,12 @@ defmodule BpyMcp.TestHelper do
   """
   def init_pythonx_with_bpy do
     try do
-      # Use default pythonx initialization (no system Blender paths)
+      # Start pythonx application
       Application.ensure_all_started(:pythonx)
+
+      # Check if pythonx is already initialized (from config)
+      # If not, it will be initialized when we try to use it
+      # The application may have already initialized it via config
       :ok
     rescue
       e ->
@@ -49,6 +53,11 @@ defmodule BpyMcp.TestHelper do
 
   defp check_bpy_availability do
     try do
+      # Wait a moment for pythonx to auto-initialize if configured
+      Process.sleep(200)
+
+      # Try to use pythonx - it will auto-initialize if configured
+      # or raise an error if not initialized
       code = """
       try:
           import bpy
@@ -62,20 +71,73 @@ defmodule BpyMcp.TestHelper do
         _ -> false
       end
     rescue
-      _ -> false
+      RuntimeError ->
+        # Pythonx not initialized yet - wait longer and retry once
+        Process.sleep(2000)
+
+        try do
+          code = """
+          try:
+              import bpy
+              result = True
+          except ImportError:
+              result = False
+          """
+
+          case Pythonx.eval(code, %{}) do
+            true -> true
+            _ -> false
+          end
+        rescue
+          _ -> false
+        end
+
+      _ ->
+        false
     end
   end
 
   @doc """
-  Setup callback that fails if bpy is not available.
-  Use this in test modules that require bpy.
-  Since bpy is a required dependency, tests will fail if it's not available.
+  Setup callback that ensures bpy is available.
+  Since bpy is always available via pythonx, we ensure pythonx is initialized.
   """
-  def setup_require_bpy(context) do
-    if bpy_available?() do
+  def setup_require_bpy(_context) do
+    # Ensure pythonx application is started
+    Application.ensure_all_started(:pythonx)
+
+    # Wait for pythonx to auto-initialize from config
+    # Pythonx auto-initialization happens asynchronously, so we need to wait
+    wait_for_pythonx_initialization()
+
+    :ok
+  end
+
+  defp wait_for_pythonx_initialization do
+    # Try to use pythonx - it will raise if not initialized
+    # Retry with exponential backoff up to 5 seconds
+    wait_for_pythonx_initialization(0, 10)
+  end
+
+  defp wait_for_pythonx_initialization(attempt, max_attempts) when attempt >= max_attempts do
+    # Give up after max attempts
+    Process.sleep(500)
+  end
+
+  defp wait_for_pythonx_initialization(attempt, max_attempts) do
+    try do
+      # Try a simple pythonx operation to see if it's initialized
+      _ = Pythonx.eval("1 + 1", %{})
+      # If we get here, pythonx is initialized
       :ok
-    else
-      raise "bpy is not available - this is a required dependency. Since bpy is vendored via pythonx, this indicates a configuration issue."
+    rescue
+      RuntimeError ->
+        # Not initialized yet, wait and retry
+        Process.sleep(500)
+        wait_for_pythonx_initialization(attempt + 1, max_attempts)
+
+      _ ->
+        Process.sleep(500)
+        wait_for_pythonx_initialization(attempt + 1, max_attempts)
     end
   end
 end

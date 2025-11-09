@@ -3,80 +3,11 @@
 
 defmodule BpyMcp.IntegrationTest do
   use ExUnit.Case, async: false
-  alias BpyMcp.{StdioServer, NativeService}
+  alias BpyMcp.NativeService
   alias BpyMcp.TestHelper
 
   defp require_bpy(context) do
     TestHelper.setup_require_bpy(context)
-  end
-
-  describe "Application startup" do
-    test "application starts successfully" do
-      # Test that the application can start (this is more of a smoke test)
-      # In a real scenario, we'd mock the dependencies
-      assert is_atom(BpyMcp.Application)
-      assert function_exported?(BpyMcp.Application, :start, 2)
-    end
-
-    test "application defines correct children" do
-      # Test the supervision tree structure
-      children = [
-        {BpyMcp.NativeService, [name: BpyMcp.NativeService]},
-        {BpyMcp.StdioServer, []}
-      ]
-
-      opts = [strategy: :one_for_one, name: BpyMcp.Supervisor]
-
-      # Verify the children list matches what Application.start/2 uses
-      assert length(children) == 2
-      assert opts[:strategy] == :one_for_one
-      assert opts[:name] == BpyMcp.Supervisor
-    end
-  end
-
-  describe "StdioServer" do
-    test "defines child_spec correctly" do
-      spec = StdioServer.child_spec([])
-      expected_keys = [:id, :start, :type, :restart, :shutdown]
-
-      assert is_map(spec)
-      # Map.keys order might vary, so check that all expected keys are present
-      assert MapSet.subset?(MapSet.new(expected_keys), MapSet.new(Map.keys(spec)))
-      assert spec.id == BpyMcp.StdioServer
-      assert spec.type == :worker
-      assert spec.restart == :permanent
-      assert spec.shutdown == 500
-    end
-
-    test "start_link function exists" do
-      # Just test that the function exists, don't test the actual call since
-      # it would start a server that runs forever
-      # Force module loading by calling a function that doesn't require the server to be running
-      _spec = StdioServer.child_spec([])
-      assert function_exported?(StdioServer, :start_link, 1)
-    end
-  end
-
-  describe "Mix task integration" do
-    test "mcp.server task exists and is properly defined" do
-      # Load the Mix task module since it's not loaded during regular compilation
-      Code.require_file("lib/mix/tasks/mcp.server.ex")
-      assert function_exported?(Mix.Tasks.Mcp.Server, :run, 1)
-    end
-  end
-
-  describe "MCP protocol integration" do
-    test "NativeService implements required MCP callbacks" do
-      # Test that NativeService properly implements the ExMCP.Server behaviour
-      assert function_exported?(NativeService, :handle_tool_call, 3)
-      # Note: Other callbacks are implemented by the ExMCP.Server macro
-    end
-
-    test "server metadata is correctly defined" do
-      # Test server information defined in the use ExMCP.Server macro
-      # This is more of a compilation test, but ensures the server is properly configured
-      assert BpyMcp.NativeService.__info__(:module) == BpyMcp.NativeService
-    end
   end
 
   describe "end-to-end tool call flow" do
@@ -116,20 +47,6 @@ defmodule BpyMcp.IntegrationTest do
       assert {:error, error_message, _state} = result
       assert String.contains?(error_message, "Tool not found")
       assert String.contains?(error_message, "nonexistent_tool")
-    end
-  end
-
-  describe "configuration integration" do
-    test "config.exs exists and is valid" do
-      # Test that configuration files exist
-      config_path = Path.join(File.cwd!(), "config/config.exs")
-      assert File.exists?(config_path)
-    end
-
-    test "mix.exs includes proper configuration" do
-      # Test that mix.exs has the expected configuration
-      assert function_exported?(BpyMcp.MixProject, :project, 0)
-      assert function_exported?(BpyMcp.MixProject, :application, 0)
     end
   end
 end

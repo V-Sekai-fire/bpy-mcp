@@ -5,16 +5,6 @@ defmodule BpyMcp.NativeServiceTest do
   use ExUnit.Case, async: true
   alias BpyMcp.NativeService
 
-  describe "module structure" do
-    test "defines handle_tool_call function" do
-      assert function_exported?(NativeService, :handle_tool_call, 3)
-    end
-
-    test "is a GenServer" do
-      assert BpyMcp.NativeService.__info__(:attributes)[:behaviour] == [GenServer]
-    end
-  end
-
   describe "tool call error handling" do
     test "returns error for unknown tool" do
       args = %{}

@@ -12,7 +12,7 @@ defmodule BpyMcp.MeshTest do
   describe "export_json/2" do
     setup :require_bpy
 
-    test "exports mock data successfully" do
+    test "exports data successfully" do
       result = BpyMcp.Mesh.export_json("/tmp", %{})
 
       assert {:ok, json_string} = result
@@ -43,7 +43,7 @@ defmodule BpyMcp.MeshTest do
       face_anchors = mesh["face_anchors"]
       triangle_normals = mesh["triangle_normals"]
 
-      # Mock cube has 6 quad faces, each producing 2 triangles = 12 triangles
+      # Cube has 6 quad faces, each producing 2 triangles = 12 triangles
       assert length(triangles) == 12
       # One anchor per original face
       assert length(face_anchors) == 6
@@ -63,7 +63,7 @@ defmodule BpyMcp.MeshTest do
   describe "import_bmesh_scene/2" do
     setup :require_bpy
 
-    test "imports mock glTF data successfully" do
+    test "imports glTF data successfully" do
       # First export some data to get valid glTF JSON
       {:ok, gltf_data} = BpyMcp.Mesh.export_bmesh_scene("/tmp")
 
@@ -116,7 +116,7 @@ defmodule BpyMcp.MeshTest do
     setup :require_bpy
 
     test "export then import preserves mesh structure" do
-      # Export mock scene
+      # Export scene
       {:ok, exported_gltf} = BpyMcp.Mesh.export_bmesh_scene("/tmp")
 
       # Convert to JSON and back
@@ -136,7 +136,7 @@ defmodule BpyMcp.MeshTest do
     end
 
     test "EXT_mesh_bmesh topology reconstruction" do
-      # Export mock scene
+      # Export scene
       {:ok, exported_gltf} = BpyMcp.Mesh.export_bmesh_scene("/tmp")
 
       # Get the EXT_mesh_bmesh data from the first mesh
@@ -154,20 +154,20 @@ defmodule BpyMcp.MeshTest do
       vertices = ext_bmesh["vertices"]
       assert Map.has_key?(vertices, "count")
       assert Map.has_key?(vertices, "positions")
-      # In mock mode, positions is a list; in real mode it would be an accessor index
+      # positions can be a list or an accessor index
       assert is_list(vertices["positions"]) or is_integer(vertices["positions"])
 
       edges = ext_bmesh["edges"]
       assert Map.has_key?(edges, "count")
       assert Map.has_key?(edges, "vertices")
-      # In mock mode, vertices is a list; in real mode it would be an accessor index
+      # vertices can be a list or an accessor index
       assert is_list(edges["vertices"]) or is_integer(edges["vertices"])
 
       faces = ext_bmesh["faces"]
       assert Map.has_key?(faces, "count")
       assert Map.has_key?(faces, "vertices")
       assert Map.has_key?(faces, "offsets")
-      # In mock mode, vertices is a list; in real mode it would be an accessor index
+      # vertices can be a list or an accessor index
       assert is_list(faces["vertices"]) or is_integer(faces["vertices"])
       # Should be accessor index
       assert is_integer(faces["offsets"])

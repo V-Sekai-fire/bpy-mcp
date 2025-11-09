@@ -8,7 +8,6 @@ A Model Context Protocol (MCP) server that provides Blender Python (bpy) tools f
 - **Material Management**: Apply materials with custom colors to objects
 - **Scene Rendering**: Render scenes to image files with configurable resolution
 - **Scene Information**: Query current scene details including objects and settings
-- **Mock Mode**: Fallback functionality when Python/Blender is not available
 
 ## MCP Tools
 
@@ -54,7 +53,7 @@ cd bpy-mcp
 ./docker-run.sh prod
 ```
 
-### Development
+### Docker Development Commands
 
 ```bash
 # Start development server with hot reload
@@ -152,7 +151,8 @@ mix mcp.stdio
 The HTTP server will be available at:
 
 - MCP endpoint: `http://localhost:4000` (POST requests)
-- Health check: `http://localhost:4000/.well-known/health` (via ex_mcp)
+- SSE endpoint: `http://localhost:4000/sse` (for streaming responses)
+- Health check: `http://localhost:4000/health`
 
 **Note:** For IDE integration (VS Code/Cursor), stdio transport (`mix mcp.stdio`) is recommended.
 
@@ -163,8 +163,10 @@ The HTTP server will be available at:
 **Setup Guide**: See [AGENTS.md](./AGENTS.md) for detailed instructions on configuring VS Code and Cursor to use this MCP server.
 
 **Quick Start:**
+
 1. Open your editor → Command Palette (`Shift + Cmd/Ctrl + P`) → "Open MCP Settings"
 2. Add to `mcp.json`:
+
 ```json
 {
   "mcpServers": {
@@ -176,16 +178,19 @@ The HTTP server will be available at:
   }
 }
 ```
+
 3. Save and restart your editor
 
 See [AGENTS.md](./AGENTS.md) for detailed setup instructions.
 
-### HTTP Transport
+### HTTP Transport (with SSE Streaming)
 
-To connect with an MCP client using HTTP transport, configure the client with:
+The HTTP transport includes Server-Sent Events (SSE) for real-time streaming of MCP responses.
 
-- **Server URL**: `http://localhost:4000`
-- **Protocol**: MCP JSON-RPC 2.0
+- **MCP endpoint**: `http://localhost:4000` (POST requests)
+- **SSE endpoint**: `http://localhost:4000/sse` (for streaming responses)
+- **Health check**: `http://localhost:4000/health`
+- **Protocol**: MCP JSON-RPC 2.0 with SSE streaming
 
 Example client configuration (for Claude Desktop or other MCP clients):
 
@@ -203,6 +208,8 @@ Example client configuration (for Claude Desktop or other MCP clients):
 }
 ```
 
+**Note**: SSE streaming is automatically enabled when using HTTP transport, providing real-time updates for long-running operations.
+
 ### Stdio Transport
 
 For stdio-based clients:
@@ -217,7 +224,6 @@ For stdio-based clients:
   }
 }
 ```
-
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
